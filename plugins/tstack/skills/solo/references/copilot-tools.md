@@ -91,7 +91,7 @@ The Copilot app loads the same plugin as the CLI and adds session-level tools. U
 
 | tstack need | Copilot app | Copilot CLI |
 |-------------|-------------|-------------|
-| Isolated writer (swarm worker, stack layer, orchestrate worker) | `create_session`, one worktree session per writer | `git worktree add` per writer, then take each writer yourself in turn — tstack does not spawn, so the isolation is the worktree, not a second agent |
+| Isolated writer (stack layer, orchestrate worker) | `create_session`, one worktree session per writer | `git worktree add` per writer, then take each writer yourself in turn — tstack does not spawn, so the isolation is the worktree, not a second agent |
 | Recurring wake-up (`loop`, the `/loop` audit tick, babysit's cadence) | `save_session_automation` on this session | Re-run the step yourself each turn, or ask the user to re-invoke; state the cadence in the decision trail |
 | Coordinate several sessions or repos (`orchestrate`, `autopilot-full`) | The app's `orchestrate` skill plus `send_session_message` | One worktree per track and you working them in sequence; a second human-opened session is a lane you message, never a spawned worker |
 | Stacked PRs (`autopilot-stack`, shipping a stack) | The app's `pr-stack` skill, one child session per layer | `gt` or `gh`, one worktree per layer |

@@ -33,7 +33,7 @@ Skip Phase A only when the work is genuinely greenfield with no surrounding syst
 
 Work the design sketches as successive passes yourself, one candidate at a time, each from the Phase A grounding artifacts and each writing to its own output path. Read the candidates against each other, pick the strongest as the base, and graft the best ideas from the rest into it. Pass `references/runner-prompt.md` as each runner's prompt. Each candidate produces a design package shaped per `references/rationale-template.md`.
 
-Take the seats from the `architect runners` line in `tstack-models.md`. If the sheet or that line is missing, use the defaults in [Models](#models). As in arena, a seat is a design you produce in turn, or one you hand to an open lane — never a spawned agent.
+Take the seats from the `architect runners` line in `tstack-models.md`. If the sheet or that line is missing, use the defaults in [Models](#models). A seat is a design you produce in turn, or one you hand to an open lane — never a spawned agent.
 
 Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. Whole-shape alternatives, not point fixes inside one shape.
 

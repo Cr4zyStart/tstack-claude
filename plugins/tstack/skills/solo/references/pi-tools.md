@@ -29,7 +29,7 @@ tstack skills are written in Claude Code tool language (the `Skill` tool, the `A
 | Schedule a self-paced re-invocation (`ScheduleWakeup`) | `schedule_wakeup`, same shape. A due wakeup stays pending until the session is idle, including during manual compaction. `noop: true` only labels the wakeup, which is still scheduled, and `stop: true` cancels the pending wakeup and needs no other field. In print and JSON mode, and in a child agent, scheduling returns an error, because Pi exits when the run ends and the wakeup could never fire. After a `/loop` command ends or replaces the loop during a run, that run is refused every wakeup until it settles, whatever the prompt, and Pi tells the user. No other wakeup is refused. |
 | Read this workspace's session transcripts (Claude Code's `~/.claude/projects/<encoded-cwd>/`) | Pi sessions live in `~/.pi/agent/sessions/--<cwd>--/` (under `$PI_CODING_AGENT_DIR` when set), where `<cwd>` is the working directory without its leading `/` and with each `/` as `-`. Subagent sessions the extension started live in `<agent dir>/tstack/<parent session id>/agents/`. Each file opens with a `session` header line; every later line is an entry with an `id` and a `parentId`, and a message entry is `type: "message"` with `message.role` `user`, `assistant`, or `toolResult`. A session keeps abandoned branches in the same file, so follow `parentId` back from the last entry for the conversation that happened. The same privacy rule applies: read only this workspace's directory, never a glob across `sessions/`. |
 
-`send_message`, `list_agents`, `stop_agent`, `ask_user_question`, and `schedule_wakeup` come from the tstack Pi extension, which deliberately does not register an `agent` tool, which `pi install` of the tstack package loads. A skills-only setup has none of them, and the fan-out skills (`interrogate`, `why`, `how`, `arena`, `reflect`) degrade to a single sequential pass. A required independent review does not degrade. It stays blocked, as solo's [Lanes](../SKILL.md#lanes--never-subagents) section says.
+`send_message`, `list_agents`, `stop_agent`, `ask_user_question`, and `schedule_wakeup` come from the tstack Pi extension, which deliberately does not register an `agent` tool, which `pi install` of the tstack package loads. A skills-only setup has none of them, and the fan-out skills (`interrogate`, `why`, `how`, `architect`) degrade to a single sequential pass. A required independent review does not degrade. It stays blocked, as solo's [Lanes](../SKILL.md#lanes--never-subagents) section says.
 
 ## No subagents
 
@@ -40,8 +40,7 @@ empty, which is correct.
 
 Pi has no way to list or message a Claude session the user opened, so **there are no lanes
 on Pi**. Every tstack skill falls back to its sequential form, which is the form each skill
-is written in: `swarm` works its parts in turn, `arena` produces candidates one after
-another, `interrogate` runs its seats as successive passes with a declared change of stance,
+is written in: `interrogate` runs its seats as successive passes with a declared change of stance,
 `why` works one evidence category at a time, `how` one angle at a time. Nothing is lost but wall-clock.
 
 Keep the rest of the policy: file pointers rather than inlined context, one writer per

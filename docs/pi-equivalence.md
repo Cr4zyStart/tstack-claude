@@ -25,7 +25,7 @@ The Live column records the end-to-end run on real Pi with `TSTACK_PI_LIVE=1` (`
 | T16 | `WebFetch`/`WebSearch` | `curl` through `bash`; web search through an MCP server | difference | No skill names either tool. Fetching works through `bash`. | n/a |
 | T17 | `ScheduleWakeup` (other named tools are never referenced) | `schedule_wakeup` with the same shape | extension | `clamps to 60 s and fires the prompt as a follow-up user message` | VERIFIED |
 | T18 | MCP tool discovery | Pi's built-in MCP; list servers from the session's tools or `pi mcp list` | mapping | pi-tools.md `why` note | n/a |
-| T19 | Facts named in the system prompt | Pi's system prompt lists tools and skills; the transcript directory is given in pi-tools.md | mapping | pi-tools.md `reflect` note | n/a |
+| T19 | Facts named in the system prompt | Pi's system prompt lists tools and skills; the transcript directory is given in pi-tools.md | mapping | pi-tools.md session-transcripts row | n/a |
 | T20 | Image-generation tool | None, as on Claude Code; draw with Mermaid or text | difference | Claude Code has no such tool either, so `teach` already falls back. | n/a |
 | H01 | `SessionStart` hook | The routing instruction is added at every agent start, so it survives resume, clear, and compaction | extension | `injects the mandate and the full sheet on every agent start` | VERIFIED |
 | H02 | `CLAUDE_PLUGIN_ROOT` | The extension locates the plugin from its own file path | extension | `injects the mandate when there is no sheet` | n/a |
@@ -36,7 +36,7 @@ The Live column records the end-to-end run on real Pi with `TSTACK_PI_LIVE=1` (`
 | F01 | `~/.claude/projects` transcripts | `find-transcript.mjs` reads Pi sessions and follows the active branch | script | `a Pi session's opening prompt is the first user message on the branch that ends at the last entry` | VERIFIED |
 | F07 | Own transcript as evidence | Same reader; `worktree-audit.mjs` scans Pi session roots | script | `a Pi session in a second transcripts root marks the worktree it ran in as a recent chat` | n/a |
 | F02 | `.claude/skills/` project and user skills | `.pi/skills/` or `.agents/skills/` | mapping | pi-tools.md `create-verification-skill` note | n/a |
-| F03 | `~/.claude/plugins/` install path | Skill files load from the Pi package directory that `pi list` shows | mapping | pi-tools.md `reflect` note | n/a |
+| F03 | `~/.claude/plugins/` install path | Skill files load from the Pi package directory that `pi list` shows | mapping | pi-tools.md lead paragraph | n/a |
 | F04 | `~/.claude/orchestrate/<slug>/` store | A plain directory, used unchanged | native | orchestrate playbook | n/a |
 | F05 | `~/.claude/shell-snapshots/` cleanup advice | Cleanup advice only | n/a | worktree-cleanup playbook | n/a |
 | F06 | `.claude/worktrees` | The extension uses the same path | extension | `a parent session already in a linked worktree gets its own child worktree` | n/a |
