@@ -1,1 +1,1 @@
-These are the user's saved tstack model choices from the Copilot model sheet. Each role line is an explicit model instruction for the `task` tool's `model` parameter; `inherit-parent` or `auto` omits `model`. Use these instead of reading the sheet:
+These are the user's saved tstack model choices from the Copilot model sheet. Each role line says which model to be on for that role's work; `inherit-parent` or `auto` means stay on the session's model. Use these instead of reading the sheet:

@@ -690,9 +690,9 @@ export function effortSection(levels, defaultEffort) {
     "A role value in the override sheet may name a reasoning effort after its model, as in `opus @xhigh`. " +
     "Levels on Claude Code: " + codeList(levels) + ". Which ones apply depends on the model. " +
     "A value without `@` takes the sheet's `default effort` line, a level or `session`, " +
-    `and ${code(defaultEffort)} when the sheet has no such line. \`session\` sets no effort, so the dispatch ` +
-    "is the usual one. Strip the suffix before reading the model: `inherit-parent` or `auto` still omits `model` " +
-    "at every level, and a model name is passed as `model`. " +
+    `and ${code(defaultEffort)} when the sheet has no such line. \`session\` names no level at all. ` +
+    "Strip the suffix before reading the model: `inherit-parent` or `auto` means stay on the session's " +
+    "model at every level, and a model name is the model to be on. " +
     "The level is recorded, not dispatched: tstack never spawns, so there is no child whose effort it could set. " +
     "Read it as the user's note about how hard the role is, and say so if you cannot honour it."
   );
@@ -784,7 +784,7 @@ export function overrideSheetBlock(models) {
     "# tstack model configuration\n\n" +
     "Per-role model overrides for tstack skills. Each tstack SKILL.md names its defaults in a Models section; " +
     "the values here override those defaults. Delete a line to fall back to the skill default. " +
-    "A value of `inherit-parent` or `auto` runs that role on the parent session's model (the `Agent` call omits `model`); " +
+    "A value of `inherit-parent` or `auto` leaves that role on the session's model, switching nothing; " +
     "an alias entry in a panel list still counts as one of that panel's passes. " +
     "A model may carry a reasoning effort, as in `opus @xhigh` (levels: " + models.efforts.join(", ") + "); " +
     "the level is recorded, not dispatched: tstack never spawns, so there is no child whose effort it could set. " +

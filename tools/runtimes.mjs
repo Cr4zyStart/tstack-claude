@@ -214,12 +214,13 @@ export function copilotModelNamesSection(models) {
     `- No sheet, or the hook reports \`sheet invalid\`: before a skill that needs a role model (${roleSkills(models).map(code).join(", ")}), stop, load ` +
     "`setup-tstack` with the `skill` tool, and finish it first. In that same session, use the values it just wrote; " +
     "later sessions get them from the hook. Do not ask again on later runs.\n" +
-    "- A role line in the sheet is the user's explicit model instruction, so pass it as the `task` tool's " +
-    "`model` parameter. `inherit-parent` or `auto` omits `model`.\n" +
-    "- The plugin's `PreToolUse` hook enforces this for tstack agents. While the sheet is valid, it denies a `task` " +
+    "- A role line in the sheet is the user's explicit instruction about which model to be on for that " +
+    "work. `inherit-parent` or `auto` means stay on the session's model. Nothing is passed anywhere: " +
+    "there is no `task` call to carry it.\n" +
+    "- The plugin's `PreToolUse` hook is the backstop if a `task` call is made anyway. While the sheet is valid, it denies a `task` " +
     "call whose `agent_type` starts with `tstack:` and whose `model` is not one of the sheet's values, and its reason " +
-    "lists the saved IDs. Retry with the role's saved model; never retry on another unsaved model. It leaves calls " +
-    "with no `model` and other agent types alone.\n" +
+    "lists the saved IDs. Do not retry the call on another model: drop it and do the work yourself. It leaves " +
+    "calls with no `model` and other agent types alone.\n" +
     `- Roles that default to the strongest model (${strongest.map((r) => code(r.role)).join(", ")}): ` +
     "the strongest model the user chose.\n" +
     "- Diverse-model panels (`architect`, `interrogate`, `how` critics): the adversarial " +

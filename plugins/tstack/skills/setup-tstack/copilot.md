@@ -25,7 +25,7 @@ A Copilot sheet uses step 6's role lines and settings under this header in place
 ```markdown
 # tstack model configuration
 
-Per-role model choices for tstack skills on GitHub Copilot, written by setup-tstack. Every role keeps its line; rerun setup-tstack to change one. A value of `inherit-parent` or `auto` runs that role on the parent session's model (the `task` call omits `model`); an alias entry in a panel list still counts toward that panel's fan-out. A model may carry a reasoning effort, as in `gpt-5.5 @xhigh` (levels: low, medium, high, xhigh, max), which the `task` call passes as `reasoning_effort`. `default effort` sets the level for a value without one; `session` keeps the parent session's effort. `session hook: off` stops the SessionStart hook from injecting the solo mandate; any other value, or no line, leaves it on. `panel vendors: any` records that the user kept a panel whose models come from one vendor.
+Per-role model choices for tstack skills on GitHub Copilot, written by setup-tstack. Every role keeps its line; rerun setup-tstack to change one. A value of `inherit-parent` or `auto` leaves that role on the session's model, switching nothing; an alias entry in a panel list still counts as one of that panel's passes. A model may carry a reasoning effort, as in `gpt-5.5 @xhigh` (levels: low, medium, high, xhigh, max), recorded as the user's note about how hard the role is rather than dispatched. `default effort` sets the level for a value without one; `session` keeps the parent session's effort. `session hook: off` stops the SessionStart hook from injecting the solo mandate; any other value, or no line, leaves it on. `panel vendors: any` records that the user kept a panel whose models come from one vendor.
 ```
 
 ## Detect models
