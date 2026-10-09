@@ -7,7 +7,7 @@
 # the Claude Code plugin with no commands/. That works only if a user-typed
 # /plugin:name still reaches the skill on its own; this script proves it with
 # one haiku call. If it fails, upstream changed slash resolution: re-read #22
-# and CHANGES 0.9.13 before reintroducing commands/. Last verified on 2.1.245.
+# and CHANGES 0.9.13 before reintroducing commands/. Last verified on 2.1.261.
 #
 # The static layout invariants (no commands/, flag discipline, namespaced agent
 # dispatch) run inside tools/generate.mjs; tests/invariants.test.mjs proves
