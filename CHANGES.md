@@ -2,6 +2,27 @@
 
 This file is the release changelog, with one `## <version> - <title>` entry per release, newest first. The Cursor-to-Claude rewrite rules live in [`tools/substitutions.json`](tools/substitutions.json), and the [sync boundary](CONTRIBUTING.md#the-sync-boundary) in `CONTRIBUTING.md` defines how a change to upstream's skill content is declared.
 
+## 0.9.80 - keep vendored script writes in the workspace on Windows
+
+**Security fix. Windows installs of the GitHub Copilot hook should update.**
+
+The PreToolUse hook approved a vendored script run writing to any absolute
+path, inside the workspace or not. `log.sh` appends to whatever path it is
+given, so an approved command could append to any file on disk without the
+user being prompted.
+
+`safe_path` decided whether a path was absolute by testing for a leading
+slash. A Windows path such as `C:/x` has none, so it was treated as relative
+and joined to the working directory. Resolving that produced the working
+directory itself plus leftover text, which therefore always began with the
+working directory and satisfied the containment check.
+
+A drive-letter path, and a UNC path, now count as absolute and are judged on
+where they actually point. Containment was never affected on Linux or macOS,
+where an absolute path starts with a slash. On Linux the hook is slightly
+stricter than before: a relative path whose first segment looks like a drive
+is no longer auto-approved.
+
 ## 0.9.79 - refuse the bare relative() behind six separator bugs
 
 A lint now refuses a bare `relative()` call anywhere in the repository. Six
