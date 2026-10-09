@@ -455,7 +455,7 @@ describe("deriveSkill", () => {
   test("appends the Reasoning effort section after the Models section", () => {
     const out = deriveSkill("plugins/tstack/skills/how/SKILL.md", front("disable-model-invocation: true\n"), models, leads);
     expect(out.indexOf("## Models")).toBeLessThan(out.indexOf("## Reasoning effort"));
-    expect(out).toContain("subagent_type: \"tstack:effort-<level>\"");
+    expect(out).toContain("recorded, not dispatched");
   });
 
   test("stamps a file's lead line in its own paragraph under the first heading", () => {
@@ -589,12 +589,16 @@ describe("effort agents", () => {
     expect(stampAgentPaths(out, ["./agents/a.md"])).toBe(out);
   });
 
-  test("the stamped section names every level, the default, both dispatch targets, and the Codex parameter", () => {
+  // FIX [Claude AI - Opus 5] (2026-10-09 21:20:40): was "names every level, the
+  // default, both dispatch targets, and the Codex parameter". 4aa643f removed
+  // the dispatch targets: plugin.json registers no agents, so
+  // tstack:effort-<level> never resolved. The section must still name the
+  // levels and the default, and must now say the level is not dispatched.
+  test("the stamped section names every level and the default, and dispatches none of them", () => {
     const text = effortSection(["low", "max"], "high");
     for (const level of ["low", "max", "high"]) expect(text).toContain(`\`${level}\``);
-    expect(text).toContain('subagent_type: "tstack:effort-<level>"');
-    expect(text).toContain('subagent_type: "tstack:tstack-agent-<level>"');
-    expect(text).toContain("`reasoning_effort`");
+    expect(text).toContain("recorded, not dispatched");
+    expect(text).not.toContain("subagent_type");
   });
 });
 

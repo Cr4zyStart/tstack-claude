@@ -223,7 +223,10 @@ describe("PreToolUse model check for tstack agents", () => {
     "no sheet": [null, agent("claude-haiku-4.5")],
     "a sheet with no role lines": ["session hook: on\n", agent("claude-haiku-4.5")],
     "a sheet missing a role": [sheet({ drop: "hillclimb" }), agent("claude-haiku-4.5")],
-    "a sheet with a malformed ID": [sheet({ set: { "swarm workers": "Claude Opus" } }), agent("claude-haiku-4.5")],
+    // FIX [Claude AI - Opus 5] (2026-10-09 21:40:05): was "swarm workers", a role
+    // deleted in the consolidation. set() then appended an unknown line instead
+    // of corrupting a real one, so the sheet stayed valid and the hook ran.
+    "a sheet with a malformed ID": [sheet({ set: { "perf-issue": "Claude Opus" } }), agent("claude-haiku-4.5")],
     "a single-vendor panel": [sheet({ panel: "gpt-5.5, gpt-5.4" }), agent("claude-haiku-4.5")],
     "a payload json.awk cannot decode": [sheet(), agent("claude-haiku-4.5").replace("haiku", "h\\u00e9iku")],
   };

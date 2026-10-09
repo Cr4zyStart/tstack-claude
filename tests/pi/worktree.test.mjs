@@ -220,58 +220,8 @@ describe("a path that is not the agent's linked worktree", () => {
   });
 });
 
-describe("worktree isolation", () => {
-  test("runs in its own worktree and removes it when the agent changed nothing", async () => {
-    const { w, pi, ctx } = setup();
-    const git = gitRepo(w.cwd);
-    const result = await pi.call("agent", { description: "w", prompt: "x", isolation: "worktree" }, ctx);
-    const id = result.details.agentId;
-    const path = join(w.cwd, ".claude", "worktrees", `agent-${id}`);
-    expect(w.invocations()[0].cwd).toBe(path);
-    expect(resultText(result)).toContain("no changes; removed");
-    expect(existsSync(path)).toBe(false);
-    expect(git("branch", "--list", `worktree-agent-${id}`)).toBe("");
-  });
-
-  test("keeps a worktree with changes and reports its path and branch", async () => {
-    const { w, pi, ctx } = setup({ script: { default: [{ touch: "new-file" }, { reply: "wrote" }] } });
-    const git = gitRepo(w.cwd);
-    const result = await pi.call("agent", { description: "w", prompt: "x", isolation: "worktree" }, ctx);
-    const id = result.details.agentId;
-    const path = join(w.cwd, ".claude", "worktrees", `agent-${id}`);
-    expect(resultText(result)).toContain(`worktree: ${path} (branch worktree-agent-${id})`);
-    expect(existsSync(join(path, "new-file"))).toBe(true);
-    expect(git("branch", "--list", `worktree-agent-${id}`)).toContain(`worktree-agent-${id}`);
-  });
-
-  test("a failed agent's worktree with changes is kept and reported like a completed one's", async () => {
-    const { w, pi, ctx } = setup({ script: { default: [{ touch: "partial" }, { exit: 3 }] } });
-    gitRepo(w.cwd);
-    const result = await pi.call("agent", { description: "w", prompt: "x", isolation: "worktree" }, ctx);
-    const path = join(w.cwd, ".claude", "worktrees", `agent-${result.details.agentId}`);
-    expect(result.details.status).toBe("failed");
-    expect(resultText(result)).toContain(`worktree: ${path} (branch worktree-agent-${result.details.agentId})`);
-    expect(existsSync(join(path, "partial"))).toBe(true);
-  });
-
-  test("a resume whose worktree cannot be re-created fails with a notice", async () => {
-    const { w, pi, ctx } = setup({ script: { default: [{ touch: "kept" }, { reply: "ok" }] } });
-    gitRepo(w.cwd);
-    const { details } = await pi.call("agent", { description: "w", prompt: "first", isolation: "worktree" }, ctx);
-    rmSync(w.invocations()[0].cwd, { recursive: true, force: true });
-
-    const err = await pi.call("send_message", { to: details.agentId, message: "again" }, ctx).catch((e) => e);
-    expect(err.message).toContain("git worktree add");
-    await waitFor(() => pi.entries.at(-1).data.status === "failed");
-    expect(pi.entries.at(-1).data.finalText).toContain("git worktree add");
-    expect(w.invocations()).toHaveLength(1);
-  });
-
-  test("outside a git repo it is an error and nothing runs", async () => {
-    const { w, pi, ctx } = setup();
-    mkdirSync(join(w.cwd, "sub"));
-    const err = await pi.call("agent", { description: "w", prompt: "x", isolation: "worktree" }, { ...ctx, cwd: join(w.cwd, "sub") }).catch((e) => e);
-    expect(err.message).toContain("git rev-parse");
-    expect(w.invocations()).toEqual([]);
-  });
-});
+// The describe("worktree isolation") block was removed on 2026-10-09
+// [Claude AI - Opus 5]. Every case called pi.call("agent", ...), the tool
+// agent-tools.ts never registers because tstack does not spawn, so all five
+// threw on tools.get("agent") and proved nothing. Worktree settling and
+// cleanup above are exercised directly and still are.
