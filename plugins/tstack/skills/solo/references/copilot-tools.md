@@ -38,6 +38,17 @@ lanes on Copilot**. Every tstack skill falls back to its sequential form, which 
 each skill is written in: parts are worked in turn, candidates produced one after another, `interrogate` runs its seats as successive passes with a declared change of
 stance, `why` works one evidence category at a time, `how` one angle at a time. Nothing is lost but wall-clock.
 
+Four Claude Code spellings survive in the skill prose. None of them is a dispatch
+instruction here:
+
+| Spelling | What it means on Copilot |
+|---|---|
+| the `Agent`/`Task` tool | Nothing to call. `solo` names it only to forbid it, and Copilot's `task` is forbidden on the same grounds. |
+| `subagent_type` | An agent type name tstack never passes. Where `team` greps for it, it is auditing for spawn attempts, not making one. |
+| `general-purpose` | The stock agent type, never dispatched. In `principle-boundary-discipline` the words are ordinary English about mechanism, not an agent. |
+| `run_in_background: true` | Background *shell* commands, which are allowed: run them with `bash` and read the output yourself. A watcher or a long test run is not an agent. |
+| `/fleet` | The Claude Code app's view of several sessions at once. No Copilot equivalent, and nothing depends on one: track parallel work with `git worktree add` and the todolist. |
+
 Keep the rest of the policy: file pointers rather than inlined context, one writer per
 worktree or branch, and narrow reads (`grep -n`, then `sed -n X,Yp`).
 

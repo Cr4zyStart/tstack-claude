@@ -676,10 +676,15 @@ export function modelsSection(roles) {
   );
 }
 
-// An override value may name a reasoning effort after its slug. Claude Code has
-// no per-call effort parameter, but a subagent definition's `effort` frontmatter
-// overrides the session's effort, so each level ships as an agent the role is
-// dispatched through, with the model still passed on the call.
+// An override value may name a reasoning effort after its slug. Effort was only
+// ever reachable through a subagent definition's `effort` frontmatter, and
+// tstack does not spawn, so the suffix changes nothing at run time. The grammar
+// stays so sheets written for pstack still parse; the prose no longer tells the
+// model to build a `subagent_type` that plugin.json's empty `agents` never
+// registers.
+// FIX [Claude AI - Opus 5] (2026-10-09 20:48:12): dropped the dispatch
+// instructions. The skills and copilot-tools.md disagreed, and the mapping was
+// the one telling the truth.
 export function effortSection(levels, defaultEffort) {
   return (
     "A role value in the override sheet may name a reasoning effort after its model, as in `opus @xhigh`. " +
@@ -688,11 +693,8 @@ export function effortSection(levels, defaultEffort) {
     `and ${code(defaultEffort)} when the sheet has no such line. \`session\` sets no effort, so the dispatch ` +
     "is the usual one. Strip the suffix before reading the model: `inherit-parent` or `auto` still omits `model` " +
     "at every level, and a model name is passed as `model`. " +
-    "On Claude Code, a level picks the effort agent from the `subagent_type` you would otherwise use. " +
-    "`tstack:tstack-agent` becomes `subagent_type: \"tstack:tstack-agent-<level>\"`. " +
-    "`general-purpose`, or no `subagent_type`, becomes `subagent_type: \"tstack:effort-<level>\"`. " +
-    "The effort agents set only `effort`, so the model you pass still decides the model. " +
-    "On Codex, pass the level as `spawn_agent`'s `reasoning_effort` and keep the usual instructions."
+    "The level is recorded, not dispatched: tstack never spawns, so there is no child whose effort it could set. " +
+    "Read it as the user's note about how hard the role is, and say so if you cannot honour it."
   );
 }
 
