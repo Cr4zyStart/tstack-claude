@@ -1,0 +1,15 @@
+{
+  "name": "tstack",
+  "displayName": "tstack (GitHub Copilot port)",
+  "version": "0.9.75",
+  "description": "If you want to go fast, go deep first — without burning your weekly budget. tstack is a token-frugal fork of pstack: it never spawns subagents. One session does the work, reading only the lines it needs; when you want more hands, it messages the Claude sessions you already opened (lanes) instead of creating new ones. Same rigorous workflows, a fraction of the tokens. Forked from michael-denyer/pstack-claude. Original pstack by Lauren Tan (tstack).",
+  "author": {
+    "name": "Michael Denyer",
+    "url": "https://github.com/michael-denyer"
+  },
+  "homepage": "https://github.com/michael-denyer/pstack-claude",
+  "repository": "https://github.com/michael-denyer/pstack-claude",
+  "license": "MIT",
+  "keywords": ["tstack", "solo", "workflow", "skills", "lanes", "github-copilot"],
+  "hooks": "hooks/copilot-hooks.json"
+}

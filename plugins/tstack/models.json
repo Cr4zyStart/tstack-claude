@@ -1,0 +1,52 @@
+{
+  "tiers": {
+    "default": "opus",
+    "strongest": "fable",
+    "panel": ["opus", "fable", "sonnet"]
+  },
+  "efforts": ["low", "medium", "high", "xhigh", "max"],
+  "defaultEffort": "session",
+  "available": ["opus", "fable", "sonnet", "haiku"],
+  "roles": [
+    { "role": "feature, refactoring", "models": "default", "skill": "solo" },
+    { "role": "bug-fix", "models": "strongest", "skill": "solo" },
+    { "role": "perf-issue", "models": "strongest", "skill": "solo" },
+    { "role": "hillclimb", "models": "strongest", "skill": "solo" },
+    { "role": "judgment and prose", "models": "default", "skill": "solo" },
+    { "role": "strongest judgment", "models": "strongest", "skill": "solo" },
+    { "role": "how explorer", "models": "default", "skill": "how" },
+    { "role": "how explainer", "models": "default", "skill": "how" },
+    { "role": "why investigators", "models": "default", "skill": "why" },
+    { "role": "why synthesizer", "models": "default", "skill": "why" },
+    { "role": "architect runners", "models": "panel", "skill": "architect" },
+    { "role": "interrogate reviewers", "models": "panel", "skill": "interrogate" }
+  ],
+  "codex": {
+    "default": "gpt-6-sol",
+    "strongest": "gpt-6-astra",
+    "panel": ["gpt-6-astra", "gpt-6-sol", "gpt-6-luna"]
+  },
+  "pi": {
+    "fallback": "anthropic",
+    "models": {
+      "anthropic": {
+        "opus": "anthropic/claude-opus-5-5",
+        "fable": "anthropic/claude-fable-5-1",
+        "sonnet": "anthropic/claude-sonnet-5-5",
+        "haiku": "anthropic/claude-haiku-4-5"
+      },
+      "openai": {
+        "opus": "openai/gpt-6.1-sol",
+        "fable": "openai/gpt-6-astra",
+        "sonnet": "openai/gpt-6-sol",
+        "haiku": "openai/gpt-6-luna"
+      },
+      "openai-codex": {
+        "opus": "openai-codex/gpt-6.1-sol",
+        "fable": "openai-codex/gpt-6-astra",
+        "sonnet": "openai-codex/gpt-6-sol",
+        "haiku": "openai-codex/gpt-6-luna"
+      }
+    }
+  }
+}

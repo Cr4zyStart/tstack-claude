@@ -1,0 +1,21 @@
+{
+  "name": "tstack-claude",
+  "interface": {
+    "displayName": "tstack"
+  },
+  "plugins": [
+    {
+      "name": "tstack",
+      "source": {
+        "source": "local",
+        "path": "./plugins/tstack"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL",
+        "products": ["CODEX"]
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

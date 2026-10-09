@@ -1,0 +1,49 @@
+{
+  "name": "tstack",
+  "private": true,
+  "version": "0.9.75",
+  "description": "If you want to go fast, go deep first. tstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence. Pi package of the Claude Code plugin; skills are shared, tool names resolve via skills/solo/references/pi-tools.md. Original pstack by Lauren Tan (tstack).",
+  "author": {
+    "name": "Michael Denyer",
+    "url": "https://github.com/michael-denyer"
+  },
+  "homepage": "https://github.com/Cr4zyStart/tstack-claude",
+  "repository": "https://github.com/Cr4zyStart/tstack-claude",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "tstack",
+    "solo",
+    "workflow",
+    "principles",
+    "agent-style",
+    "subagents",
+    "unslop",
+    "claude-code",
+    "skills",
+    "tdd",
+    "code-review",
+    "parallel-agents",
+    "codex",
+    "opencode",
+    "gemini-cli",
+    "prime-agent"
+  ],
+  "pi": {
+    "skills": [
+      "./plugins/tstack/skills"
+    ],
+    "extensions": [
+      "./plugins/tstack/pi/index.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    }
+  }
+}

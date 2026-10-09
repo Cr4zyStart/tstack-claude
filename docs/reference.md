@@ -1,0 +1,230 @@
+# tstack reference
+
+Start with the [README](../README.md) for installation and your first task.
+
+## Slash commands
+
+The package includes 43 skill directories: 20 public skills and 23 `principle-*` references. Claude Code uses `/tstack:<name>`, and Pi uses `/skill:<name>`. In Codex, request a skill by name or install the [optional shortcuts](#codex) for the `/name` form below.
+
+Find each skill's instructions in the [skills tree](../plugins/tstack/skills/).
+
+| command | use it when |
+| --- | --- |
+| `/solo` | default entry point for any non-trivial task |
+| `/team` | hand a unit of work to another Claude session you already have open |
+| `/solo-nv` | solo work with verification skipped, for a fast prototype or spike |
+| `/solo-ev` | solo work with verification enforced on the real artifact |
+| `/team-nv` | lane teamwork with verification skipped, for fast parallel prototyping |
+| `/team-ev` | lane teamwork with verification enforced and an independent verdict |
+| `/how` | walk through how a subsystem works |
+| `/why` | investigate why something was built this way (parallel multi-MCP evidence) |
+| `/architect` | settle types and module shape before writing code that crosses a function boundary |
+| `/interrogate` | have three different models try to break a diff |
+| `/correct` | find the mistakes agents keep repeating in a repo and make each one impossible, enforced at the highest level that works |
+| `/tdd` | fix a bug by writing the failing test first, then the fix |
+| `/technical-writing` | write docs, RFCs, readmes, PR descriptions, and commit messages to one layered standard |
+| `/blast-radius` | find what a change could break beyond the diff and prove safety by running code |
+| `/setup-tstack` | configure tstack per-role model choices |
+| `/tstack-help` | answer a question about tstack with the prompt to send and the file the answer came from |
+| `/unslop` | clean up writing by removing AI tells |
+| `/no-comments` | strip comments before review, fix the accepted findings, encode claimed constraints |
+| `/create-verification-skill` | generate a project-local verification skill and feature map |
+| `/babysit` | monitor an open PR, fix CI/comments, keep it merge-ready |
+
+## Runtime support
+
+All runtimes share [one skills tree](../plugins/tstack/skills/). A skills-only installation includes the skills, scripts, agent references, and license notices. The Claude Code, Codex, and GitHub Copilot plugins also install automatic routing hooks, and the Pi package adds an extension that injects the same routing and supplies the subagent tools. Codex command shortcuts are separate.
+
+| Runtime | Setup and recorded verification |
+| --- | --- |
+| Claude Code | Install the marketplace plugin. Skills use Claude tool names and model defaults; the plugin installs automatic routing. |
+| Codex | Install the native plugin through the repository's marketplace and trust its hook through `/hooks`. The [Codex mapping](../plugins/tstack/skills/solo/references/codex-tools.md) translates Claude tools and model names. Shared skill symlinks were also detected in a live session. |
+| Pi | Install the repository as a Pi package with `pi install`. The [Pi extension](../plugins/tstack/pi/index.ts) registers the subagent, question, and wake-up tools and `/loop`, and the [Pi mapping](../plugins/tstack/skills/solo/references/pi-tools.md) translates Claude tools and model names. The [equivalence table](pi-equivalence.md) records each Claude Code mechanism and how it was verified on Pi 1.0. |
+| GitHub Copilot | Install the plugin through the repository's marketplace; the CLI and the GitHub Copilot app share it. The [Copilot mapping](../plugins/tstack/skills/solo/references/copilot-tools.md) translates Claude tools, paths, and model roles, and maps app-only tools to CLI fallbacks. Install, routing, agent dispatch, and first-run setup are smoke-tested on the CLI; see [GitHub Copilot](#github-copilot). |
+| Prime Agent | Its documentation describes shared-directory discovery; it has not been tested in a live session. Choose tools and models through Prime's configuration. |
+| opencode | Discovery and reading a linked skill were verified on version 1.18.25. Configure agents, commands, and permissions in `opencode.json`. Its picker also lists principle skills. |
+| Gemini CLI | Its documentation describes shared-directory discovery; it has not been tested in a live session. Use `/skills list` to check discovery and `/skills reload` after changes. |
+
+These checks cover skill discovery. Delegation and multi-model workflows remain unverified on Prime Agent, opencode, and Gemini CLI. On those runtimes, agents must adapt Claude-specific tools, models, and configuration. Each mapping applies only to its runtime.
+
+### Automatic routing
+
+The Claude Code, Codex, and GitHub Copilot plugins load the same short [routing instruction](../plugins/tstack/hooks/session-start-context.md) on startup, resume, clear, and compact. The [POSIX hook](../plugins/tstack/hooks/session-start.sh) runs on Claude Code, POSIX Codex, and GitHub Copilot, where it prints the instruction as JSON `additionalContext` with a Copilot addendum. On Windows, Codex uses a [PowerShell adapter](../plugins/tstack/hooks/session-start.ps1) through its `commandWindows` override and does not require Bash. The adapter runs with `-ExecutionPolicy Bypass`, which a machine or user execution policy set by Group Policy overrides; on such machines the hook fails and no instruction loads. Codex requires the user to trust plugin hooks through `/hooks`. On Pi, the [extension](../plugins/tstack/pi/prompt.ts) adds the same instruction to the system prompt at every agent start, so it survives compaction. The instruction invokes `solo` when a task meets any of these conditions:
+
+- It touches more than one file or changes a signature other files call.
+- It involves a design or architecture choice.
+- It concerns a bug with an unknown cause or a performance issue.
+
+Smaller tasks proceed directly. The full skill loads when invoked, and explicit user instructions take precedence.
+
+To disable routing, run `setup-tstack` and turn off the session hook. In Claude Code, use `/tstack:setup-tstack`. You can also write `session hook: off` in the runtime's sheet, at the path in [setup-tstack's runtime table](../plugins/tstack/skills/setup-tstack/SKILL.md#other-runtimes). The hook reads that setting before injecting its instruction. Without the setting, routing stays on.
+
+Skills-only installs and other runtimes do not include the hook or the Pi extension. Request `solo` explicitly, or add a standing instruction to the runtime's instruction file.
+
+### Shared skills installation
+
+Use this path for Prime Agent, opencode, Gemini CLI, or a skills-only Codex installation. Clone the repository and link its skills into `~/.agents/skills/`:
+
+```shell
+git clone https://github.com/michael-denyer/pstack-claude
+cd tstack-claude
+mkdir -p ~/.agents/skills
+for s in plugins/tstack/skills/*/; do
+  target=~/.agents/skills/"$(basename "$s")"
+  test -e "$target" || test -L "$target" || ln -s "$(pwd)/$s" "$target"
+done
+```
+
+Keep all skill directories, including the principle references. Leave the clone at this path while the links are installed.
+
+### Manage linked skills
+
+If a destination already exists, inspect it before replacing it. The installation skips existing files, directories, and links.
+
+To update, pull changes in the clone that the links point to. To uninstall a linked skill, remove its link at `~/.agents/skills/<name>`. This removes it from every runtime using that directory.
+
+### Install with the skills CLI
+
+To install without keeping a local clone:
+
+```shell
+npx skills add https://github.com/Cr4zyStart/tstack-claude/tree/main/plugins/tstack/skills --skill "*" --agent "*" --yes
+```
+
+That path must stay `plugins/tstack/skills`. Upstream's `plugins/pstack/skills` installs pstack, whose skill names and model sheet differ.
+
+The [CI installation check](../.github/workflows/ci.yml) uses the skills CLI to copy the checkout's skill tree and compare the installed files with their sources.
+
+### Codex
+
+The [native plugin manifest](../plugins/tstack/.codex-plugin/plugin.json) points to the shared skills directory and the Codex [SessionStart hook](../plugins/tstack/hooks/codex-hooks.json). The [marketplace catalog](../.agents/plugins/marketplace.json) lists `tstack` in the `tstack-claude` marketplace. Review and trust the hook through `/hooks`; Codex asks again when its definition changes.
+
+The [README installation](../README.md#codex) registers that catalog with `codex plugin marketplace add`, then installs the plugin with `codex plugin add`. These commands match the help output from `codex-cli 0.154.0-alpha.6.2`. A fresh native installation was not tested for this documentation change.
+
+OpenAI documents [marketplace registration and the plugin format](https://developers.openai.com/plugins/build/plugins#add-a-marketplace-from-the-cli). If your CLI lacks `plugin add`, use the plugin browser after registering the marketplace, or use the [skills-only installation](#shared-skills-installation).
+
+Request `solo` by name or select its entry, such as `tstack:solo`. To enable parallel subagents:
+
+```toml
+[features]
+multi_agent = true
+```
+
+Add this setting to `~/.codex/config.toml` if subagents are disabled. Skills such as `interrogate`, and `architect` use parallel agents. The [mapping](../plugins/tstack/skills/solo/references/codex-tools.md) describes a sequential fallback and translates Claude tool names, model defaults, and verification instructions.
+
+For optional slash-command shortcuts, run this from the clone's root:
+
+```shell
+mkdir -p ~/.codex/prompts
+for c in plugins/tstack/.codex-plugin/prompts/*.md; do
+  target=~/.codex/prompts/"$(basename "$c")"
+  test -e "$target" || test -L "$target" || ln -s "$(pwd)/$c" "$target"
+done
+```
+
+Each shortcut invokes its skill. The commands skip existing files and links. Remove a shortcut by deleting its link at `~/.codex/prompts/<name>.md`. Both native-plugin and skills-only installations work without these shortcuts.
+
+### Pi
+
+The repository root is a [Pi package](https://pi.dev/packages): its [`package.json`](../package.json) lists the shared skills directory and the [tstack Pi extension](../plugins/tstack/pi/index.ts). Install it with `pi install git:github.com/michael-denyer/pstack-claude`, or `pi install <clone path>` for a local checkout.
+
+The extension supplies what Pi lacks natively, under the Claude Code names the skills use:
+
+- `agent` dispatches a child `pi --mode rpc` process with the skill's `subagent_type`, model, and effort, in the foreground or background, optionally in its own git worktree. A background agent's completion joins the running turn after its current tool calls, or starts a turn when the session is idle.
+- `send_message`, `list_agents`, and `stop_agent` message, list, and stop those agents. A message to a running agent is an RPC `steer` on the child's stdin, which the agent reads after its current tool calls before it carries on in the same run. A finished agent resumes with the message. An agent's status follows its process.
+- `ask_user_question` and `schedule_wakeup` match `AskUserQuestion` and `ScheduleWakeup`, and `/loop` matches the `loop` skill. In a child agent, asking a question and scheduling a wakeup both return an error.
+- At every agent start it adds the routing instruction, the override sheet `~/.pi/agent/tstack-models.md`, and a pointer to the Pi mapping to the system prompt.
+
+Family names such as `opus` resolve through the `pi` block of [`models.json`](../plugins/tstack/models.json) to model IDs for the provider the Pi session runs on. A ChatGPT sign-in (`openai`, or the legacy `openai-codex`) gets OpenAI models, and Anthropic or any other provider gets Claude models. Pi warns that Anthropic bills Claude used through Pi per token, as extra usage, even on a Claude subscription, and every subagent tstack starts adds to that bill. Run tstack in Claude Code to stay within a Claude plan's limits. A `pi models:` line in the sheet remaps any family name. The [Pi mapping](../plugins/tstack/skills/solo/references/pi-tools.md) lists every translation, and the [equivalence table](pi-equivalence.md) records what was verified and how.
+
+### GitHub Copilot
+
+The Copilot CLI reads the Claude Code [marketplace](../.claude-plugin/marketplace.json). For the plugin it looks for `.github/plugin/plugin.json` before `.claude-plugin/plugin.json`, so tstack ships a [Copilot manifest](../plugins/tstack/.github/plugin/plugin.json) whose `hooks` field names [`hooks/copilot-hooks.json`](../plugins/tstack/hooks/copilot-hooks.json). Copilot then skips the Claude Code `hooks/hooks.json`, so each hook runs once, and Claude Code keeps reading its own manifest. The GitHub Copilot app loads plugins installed into `~/.copilot`; a manual app check of routing, first-run setup, agent dispatch, `session hook: off`, and the app-only tools passed on 2026-09-25. To try a local checkout, pass its absolute path to `copilot plugin marketplace add`. Skills load by bare name through the `skill` tool, and a user types `/tstack:<skill>` in the CLI prompt; the agents keep their prefix, `tstack:tstack-agent` and `tstack:comment-sicko`.
+
+Copilot's hook file runs the [SessionStart hook](../plugins/tstack/hooks/session-start.sh) with the `copilot` argument. It prints JSON `additionalContext`: the routing instruction plus a [Copilot addendum](../plugins/tstack/hooks/session-start-copilot.md). It reads the model sheet, which sits outside Copilot's path sandbox, and checks it with the [same POSIX `awk` validator](../plugins/tstack/skills/setup-tstack/scripts/sheet.awk) that `setup-tstack` runs through `check-sheet.sh` after it writes the sheet. A valid sheet adds one line per known role, rebuilt from the checked values, so no other sheet text reaches the context. An invalid sheet adds `sheet invalid:` with each problem, and a missing sheet adds a note; both tell the session to run `setup-tstack` first. A second hook, [`pre-tool-use.sh`](../plugins/tstack/hooks/pre-tool-use.sh) with the matcher `view|task|bash`, does three things on Copilot. It approves reads inside the plugin directory so playbooks and references load without a path-access prompt. It approves registered scripts with their declared argument contracts and matching interpreters, using a strict command form with no shell metacharacters. It checks path operands separately from prose fields; unknown scripts and argument forms take the normal permission flow. Setup, SessionStart, and PreToolUse share one sheet decoder, including UTF-16LE support. While the sheet is valid, it denies a `tstack:*` `task` call whose `model` is not one of the saved choices, with the saved IDs in the reason. It stays silent on everything else and always exits 0, because Copilot denies a tool call when the hook fails; an `awk` error still reaches stderr. Copilot runs plugin hooks on every session start, so the Claude matcher does not apply. The hook runs lazily, after the first message is submitted and before the first model turn, including when that message is a slash command such as `/tstack:arena`. A resumed session runs it again with source `resume`, and the model still sees one routing block. On CLI 1.0.87 through 1.0.92, the context of several plugins' session-start hooks merges ([github/copilot-cli#3589](https://github.com/github/copilot-cli/issues/3589) reported that only the last one survived). If a version drops the merge, use the standing instruction from `setup-tstack`. On 1.0.92, when the CLI's cached experiment assignment turns on computer use, `-p` sessions load no plugin skills while interactive sessions still do; the smoke test clears that cache before each `-p` probe.
+
+tstack ships no default Copilot models, because the models an account reaches depend on its plan and policy. The first skill that dispatches on role models runs `setup-tstack`. It asks one `ask_user` question per tier and panel slot, each a short list drawn from the `task` tool's models and grouped by vendor, and recommends no model. It then writes `${COPILOT_HOME:-~/.copilot}/tstack-models.md` and runs `check-sheet.sh`, and later sessions receive its choices from the hook. Choose panel models from distinct vendors. A role value's `@<level>` suffix and the sheet's `default effort` line map to the `task` tool's `reasoning_effort`.
+
+Copilot lists only part of a large plugin's skills in its prompt, so some tstack skills do not appear there; each one still loads by name. If another hook or a skills-only install displaces the routing instruction, `setup-tstack` offers a standing instruction for `~/.copilot/copilot-instructions.md`.
+
+[`tests/copilot-smoke.sh`](../tests/copilot-smoke.sh) installs the checkout into a throwaway `COPILOT_HOME` and checks installation, routing, `session hook: off`, agent dispatch with an explicit model, first-run setup, that setup writes no sheet without the user's answers and exactly the supplied IDs with them, and that saved choices and plugin files reach a session without `--allow-all-paths` or any path-access request, from each session's `events.jsonl` and the written sheet. It runs the setup checks once per model in `SMOKE_SETUP_MODELS`. It also checks the `PreToolUse` deny, a vendored script and `check-sheet.sh` run with no permission request, that an injected sheet line stays out of the context, that an invalid sheet yields `sheet invalid`, that each hook fires once, the merge with a second plugin's session-start context, a `-p` resume, and, on a pseudo-terminal through [`tests/copilot-tui.py`](../tests/copilot-tui.py), a slash-command first message and an interactive resume. It needs a signed-in `copilot` CLI, spends about twenty premium requests, and skips when `copilot` is missing. CI does not run it.
+
+## Configuration and dependencies
+
+Invoke [setup-tstack](../plugins/tstack/skills/setup-tstack/SKILL.md) to choose models for each role. It detects available models, confirms the choices, and writes an override sheet. Its [runtime table](../plugins/tstack/skills/setup-tstack/SKILL.md#other-runtimes) names the sheet path and loading mechanism for each runtime. Defaults live in [models.json](../plugins/tstack/models.json).
+
+For design comparisons and reviews, choose distinct models available to your runtime. The default panel uses different Claude models.
+
+Install dependencies for the workflows you use:
+
+| Dependency | When you need it |
+| --- | --- |
+| GitHub CLI, `gh` | PR monitoring and shipping. Authenticate with `gh auth login`. |
+| Bun | The bundled `watch-pr` and `orch` scripts. Their bootstrap installs script dependencies on first run. |
+| Graphite CLI, `gt` | The Orchestrate playbook and `orch` stack frontier. Shipping and autopilot playbooks use `gh` or Origin's CLI when available. |
+| `plugin-dev` | Claude Code skill-authoring guidance used by `automate-me`, `reflect`, and `solo`. |
+
+Install the Claude Code skill-authoring companion with:
+
+```text
+/plugin marketplace add anthropics/claude-plugins-official
+/plugin install plugin-dev@claude-plugins-official
+```
+
+Those authoring workflows need `plugin-dev` for their guidance; other workflows do not. Codex and GitHub Copilot use the equivalents named in their mappings: [Codex](../plugins/tstack/skills/solo/references/codex-tools.md#driver-and-bundled-skills-tstack-references) and [Copilot](../plugins/tstack/skills/solo/references/copilot-tools.md#driver-and-bundled-skills-tstack-references).
+
+Playbooks use the runtime's task-tracking tools or an uncommitted `todo.md` checklist. For Claude Code, the repository documents `CLAUDE_CODE_ENABLE_TODO_TOOLS=1`; see [platform adaptation](../plugins/tstack/skills/solo/SKILL.md#platform-adaptation).
+
+Use [create-verification-skill](../plugins/tstack/skills/create-verification-skill/SKILL.md) to record how the agent should run and check your project, following the [driver policy](../plugins/tstack/skills/solo/SKILL.md#non-negotiables).
+
+## Maintenance
+
+### Repository layout
+
+```text
+.claude-plugin/marketplace.json    Claude Code marketplace
+.agents/plugins/marketplace.json  Codex marketplace
+package.json                      Pi package manifest
+plugins/tstack/
+  .claude-plugin/plugin.json      Claude Code plugin manifest
+  .codex-plugin/                  Codex manifest and generated prompt stubs
+  .github/plugin/plugin.json      GitHub Copilot plugin manifest
+  pi/                            Pi extension (subagent, question, and wake-up tools)
+  skills/                        Shared skills, references, and scripts
+  agents/                        Claude Code subagent definitions
+  hooks/                         Startup routing for Claude Code, Codex, and Copilot; Copilot tool checks
+tools/                           Generation, validation, and upstream sync
+tests/                           Repository checks
+```
+
+Skills-only installs use `plugins/tstack/skills/`. Agent references and license files are included under `solo/references/`.
+
+### Generated files and checks
+
+The [generator](../tools/generate.mjs) updates versions, model defaults, Codex prompts, Copilot preambles and role lists, and portable reference files, and validates the Pi package manifest. The [slash-command table](#slash-commands) supplies the Codex prompt descriptions and order. Edit that table when changing a menu description, then regenerate. Keep a row for every public skill, with `solo` first.
+
+[Documentation fact tests](../tests/readme-facts.test.mjs) check the skill counts and upstream pin. The table parser requires the header `| command | use it when |`.
+
+Run the generator and repository tests with Bun:
+
+```shell
+bun install --frozen-lockfile
+bun tools/generate.mjs
+bun test tests/
+```
+
+The install step reads the root `bun.lock` and fetches `typebox`, which the Pi extension and its tests import.
+
+CI also checks shell scripts, workflows, Markdown, relative links, and the bundled Bun tools. See [local checks](../CONTRIBUTING.md#things-that-will-fail-ci) for commands and [release instructions](../CONTRIBUTING.md#releasing) for versioning and the live Claude Code command check.
+
+### Port scope and attribution
+
+The skill tree is synced against upstream `2cbf585` (v0.15.13).
+
+This repository ports Lauren Tan's pstack from Cursor to Claude Code and shares the skills with other runtimes. It includes seven cursor-team-kit skills and an independently authored `babysit` skill. The port supplies Claude Code plugin registration and routing, Codex manifests and shortcuts, the Codex tool mapping, the Pi package, extension, and tool mapping, and the GitHub Copilot hooks and tool mapping.
+
+Cursor-specific automations, sticky-mode metadata, the Grok Bot UI workflow, and the Cursor UI tutorial are excluded. [tools/upstream.json](../tools/upstream.json) records the revisions and exclusions, [tools/substitutions.json](../tools/substitutions.json) holds the Cursor-to-Claude rewrite rules, and [CHANGES.md](../CHANGES.md) records each release. The bundled `thermo-nuclear-code-quality-review` provides a maintainability review when a workflow calls for one.
+
+For skill changes, follow the [sync boundary](../CONTRIBUTING.md#the-sync-boundary). Runtime adaptations and workflow changes both land here, and a workflow change is declared as a fork.
+
+See the [license summary](../README.md#license) for licenses and full-plugin attribution. [NOTICE-skills.md](../NOTICE-skills.md) is the notice for skills-only installations.
