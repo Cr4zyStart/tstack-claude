@@ -1,7 +1,7 @@
 {
   "name": "tstack",
   "private": true,
-  "version": "0.9.77",
+  "version": "0.9.78",
   "description": "If you want to go fast, go deep first. tstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence. Pi package of the Claude Code plugin; skills are shared, tool names resolve via skills/solo/references/pi-tools.md. Original pstack by Lauren Tan (tstack).",
   "author": {
     "name": "Cr4zyStart",

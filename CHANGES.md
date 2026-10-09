@@ -2,6 +2,16 @@
 
 This file is the release changelog, with one `## <version> - <title>` entry per release, newest first. The Cursor-to-Claude rewrite rules live in [`tools/substitutions.json`](tools/substitutions.json), and the [sync boundary](CONTRIBUTING.md#the-sync-boundary) in `CONTRIBUTING.md` defines how a change to upstream's skill content is declared.
 
+## 0.9.78 - report playbook-check paths a reader can use
+
+The project-playbook check named paths with the native separator, so on Windows
+it printed a root joined by backslashes. That reads as an escape sequence, and
+nothing looking for a forward-slash path could use it. The two lines a reader
+sees now fold the separator; the filesystem calls keep the native form.
+
+Only the message changed. The check decides exactly what it decided before, on
+every platform.
+
 ## 0.9.77 - keep the sheet's carriage returns intact and stop awk eating a Windows plugin path
 
 Three carriage-return mechanisms across four sites, plus an awk escape bug,
