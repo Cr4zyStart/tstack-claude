@@ -92,6 +92,8 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 **No is an acceptable answer.** Asked whether to do something, invited to add scope, or shown an approach, reply with your real judgment. Decline, push back, or say "this doesn't earn its place" when true. A recommendation is a judgment, not a validation. Agreement is not the default, candor over sycophancy.
 
+Two sheet entries cover work no playbook owns: **judgment and prose** for ordinary calls and write-ups, and **strongest judgment** for the ones you cannot afford to get wrong. Neither dispatches anything. They say which model to be on.
+
 ## Lanes — never subagents
 
 **Never spawn an agent.** Not the `Agent` tool, not `Task`, not `Workflow`, not a fork, not a skill that runs in a subagent, not "just one to check something". A spawned agent re-reads the files you already paid to read, in a context you cannot see, and bills every token again. That is how a weekly budget dies in an afternoon. This holds for research, for review, for broad searches, for anything. The only exception is the user asking for an agent in their own message.

@@ -82,7 +82,7 @@ Source control is always available through git and `gh`. For the other six, clas
 
 Aim for a complete **coverage map**, not a minimal one. Document the null, don't skip the search.
 
-Launch all matching investigators in a single message so they run concurrently. Don't ask one agent to cover multiple MCPs.
+Work the categories in turn, or hand some to open lanes per the **team** skill, one category each. Don't give one lane two MCPs. The sheet names this pass **why investigators** and the write-up that follows it **why synthesizer**, so the digging and the reasoning can sit on different models.
 
 Each category is one investigation pass, owning exactly one tool or MCP so its evidence stays attributable. Write nothing during the passes.
 

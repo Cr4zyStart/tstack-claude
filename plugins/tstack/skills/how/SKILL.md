@@ -22,6 +22,8 @@ If the scope is ambiguous, state your interpretation and explore. The user can r
 - **Simple** (a single module, a small utility, a narrow question such as "how does function X work"): no explorers. One explainer explores and explains in a single pass. Go to Step 2b.
 - **Complex** (a subsystem spanning multiple files or services, a cross-cutting feature, a full architectural overview): work the exploration angles first, then write the explanation. Go to Step 2a.
 
+The sheet names these two passes **how explorer** and **how explainer**. Set them apart to work the angles on a cheaper model than the write-up.
+
 When in doubt, take the simple path.
 
 ## Step 2a. Explore (complex questions only)
