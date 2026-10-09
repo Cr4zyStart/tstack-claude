@@ -66,7 +66,7 @@ Skills-only installs and other runtimes do not include the hook or the Pi extens
 Use this path for Prime Agent, opencode, Gemini CLI, or a skills-only Codex installation. Clone the repository and link its skills into `~/.agents/skills/`:
 
 ```shell
-git clone https://github.com/michael-denyer/pstack-claude
+git clone https://github.com/Cr4zyStart/tstack-claude
 cd tstack-claude
 mkdir -p ~/.agents/skills
 for s in plugins/tstack/skills/*/; do
@@ -126,7 +126,7 @@ Each shortcut invokes its skill. The commands skip existing files and links. Rem
 
 ### Pi
 
-The repository root is a [Pi package](https://pi.dev/packages): its [`package.json`](../package.json) lists the shared skills directory and the [tstack Pi extension](../plugins/tstack/pi/index.ts). Install it with `pi install git:github.com/michael-denyer/pstack-claude`, or `pi install <clone path>` for a local checkout.
+The repository root is a [Pi package](https://pi.dev/packages): its [`package.json`](../package.json) lists the shared skills directory and the [tstack Pi extension](../plugins/tstack/pi/index.ts). Install it with `pi install git:github.com/Cr4zyStart/tstack-claude`, or `pi install <clone path>` for a local checkout.
 
 The extension supplies what Pi lacks natively, under the Claude Code names the skills use:
 

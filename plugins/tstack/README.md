@@ -18,9 +18,9 @@ tstack has no server or telemetry. Anything its skills ask your agent to read, i
 
 ## Links
 
-- [Skills, slash commands, runtime setup, and model configuration](https://github.com/michael-denyer/pstack-claude/blob/main/docs/reference.md)
-- [Issues and support](https://github.com/michael-denyer/pstack-claude/issues)
-- [Security policy](https://github.com/michael-denyer/pstack-claude/blob/main/SECURITY.md)
+- [Skills, slash commands, runtime setup, and model configuration](https://github.com/Cr4zyStart/tstack-claude/blob/main/docs/reference.md)
+- [Issues and support](https://github.com/Cr4zyStart/tstack-claude/issues)
+- [Security policy](https://github.com/Cr4zyStart/tstack-claude/blob/main/SECURITY.md)
 
 ## License
 

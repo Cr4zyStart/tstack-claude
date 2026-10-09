@@ -77,7 +77,7 @@ codex plugin add tstack@tstack-claude
 Run in your terminal:
 
 ```shell
-pi install git:github.com/michael-denyer/pstack-claude
+pi install git:github.com/Cr4zyStart/tstack-claude
 ```
 
 The package loads the skills and the tstack Pi extension, which adds the subagent, question, and wake-up tools the skills use, plus `/loop` and the routing instruction. Invoke a skill with `/skill:<name>`.

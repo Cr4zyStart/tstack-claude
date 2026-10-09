@@ -9,7 +9,7 @@ Answer the user's question about tstack, hand them a prompt they can send, and l
 
 A message that asks for work, such as "use tstack to fix this bug", is not a help question. Read [`solo`](../solo/SKILL.md) and do the work under it.
 
-This file maps questions to the installed skills, playbooks, and platform mappings that own the answers. Read the matching source before answering. Its instructions take precedence over this map and any upstream guide, which describes Cursor and may differ from this port. The local links point into the installed plugin, so give the user the file's public copy: `https://github.com/michael-denyer/pstack-claude/blob/main/plugins/pstack/` followed by its path relative to the plugin root.
+This file maps questions to the installed skills, playbooks, and platform mappings that own the answers. Read the matching source before answering. Its instructions take precedence over this map and any upstream guide, which describes Cursor and may differ from this port. The local links point into the installed plugin, so give the user the file's public copy: `https://github.com/Cr4zyStart/tstack-claude/blob/main/plugins/pstack/` followed by its path relative to the plugin root.
 
 ## Find out what they need
 
@@ -29,11 +29,11 @@ Check the state that changes the answer, and mention it only when it does:
 
 ## Get set up
 
-1. Identify the user's runtime and whether they want a native plugin/package or skills-only installation. Read its section in the [README](https://github.com/michael-denyer/pstack-claude/blob/main/README.md#install) or [shared installation reference](https://github.com/michael-denyer/pstack-claude/blob/main/docs/reference.md#shared-skills-installation), then give the matching install command.
+1. Identify the user's runtime and whether they want a native plugin/package or skills-only installation. Read its section in the [README](https://github.com/Cr4zyStart/tstack-claude/blob/main/README.md#install) or [shared installation reference](https://github.com/Cr4zyStart/tstack-claude/blob/main/docs/reference.md#shared-skills-installation), then give the matching install command.
 2. Read [`/setup-tstack`](../setup-tstack/SKILL.md), including its Other runtimes table, before explaining model choices, effort, sheet loading, or automatic routing. For a bundled routing hook or extension, use its persistent `session hook: off` setting in the current runtime's sheet to turn routing off.
-3. Offer a first task prompt with a goal and a check that can pass or fail, per [`references/prompting.md`](references/prompting.md). Use the current runtime's invocation syntax from the [slash-command reference](https://github.com/michael-denyer/pstack-claude/blob/main/docs/reference.md#slash-commands).
+3. Offer a first task prompt with a goal and a check that can pass or fail, per [`references/prompting.md`](references/prompting.md). Use the current runtime's invocation syntax from the [slash-command reference](https://github.com/Cr4zyStart/tstack-claude/blob/main/docs/reference.md#slash-commands).
 
-Before giving runtime-specific instructions or adapting a recipe, read the [Codex mapping](../solo/references/codex-tools.md) or [Pi mapping](../solo/references/pi-tools.md) when applicable. Their routing sections cover hook trust, extension loading, and skills-only installs. For other runtimes, use the [runtime support reference](https://github.com/michael-denyer/pstack-claude/blob/main/docs/reference.md#runtime-support).
+Before giving runtime-specific instructions or adapting a recipe, read the [Codex mapping](../solo/references/codex-tools.md) or [Pi mapping](../solo/references/pi-tools.md) when applicable. Their routing sections cover hook trust, extension loading, and skills-only installs. For other runtimes, use the [runtime support reference](https://github.com/Cr4zyStart/tstack-claude/blob/main/docs/reference.md#runtime-support).
 
 If cost is the worry, say where the tokens go and how to spend less. tstack spends extra tokens on subagents and review panels. Rerun `/setup-tstack` and pick a lower effort or cheaper models. A role set to `auto` or `inherit-parent` runs on the chat's model, which costs less when the chat runs on a cheaper model. A shorter panel list runs fewer subagents, one for each entry. Save `/solo` for work that needs rigor.
 

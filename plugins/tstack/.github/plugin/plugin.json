@@ -7,8 +7,8 @@
     "name": "Michael Denyer",
     "url": "https://github.com/michael-denyer"
   },
-  "homepage": "https://github.com/michael-denyer/pstack-claude",
-  "repository": "https://github.com/michael-denyer/pstack-claude",
+  "homepage": "https://github.com/Cr4zyStart/tstack-claude",
+  "repository": "https://github.com/Cr4zyStart/tstack-claude",
   "license": "MIT",
   "keywords": ["tstack", "solo", "workflow", "skills", "lanes", "github-copilot"],
   "hooks": "hooks/copilot-hooks.json"
