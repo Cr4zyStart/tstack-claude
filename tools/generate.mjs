@@ -45,6 +45,7 @@
 // (tools/runtimes.mjs), and every hooks file, the Claude Code plugin's and the
 // ones each row's manifest names.
 
+import { execFileSync } from "node:child_process";
 import {
   existsSync,
   lstatSync,
@@ -65,6 +66,26 @@ import { Value } from "typebox/value";
 import { code, codeList, PLUGIN, SKILLS } from "./plugin.mjs";
 import { RUNTIMES, roleSkills } from "./runtimes.mjs";
 import { markdownFiles, pathIsInside, posixRel, toPosix, validateProsePaths, validateSkillsTree, walk } from "./validate-skills.mjs";
+
+// The file modes git records under `dir`, keyed by path relative to it. Used
+// where the filesystem cannot report an executable bit. Null outside a work
+// tree, or when git is unavailable, so callers can fall back to the stat.
+function gitRecordedModes(dir) {
+  try {
+    const out = execFileSync("git", ["-C", dir, "ls-files", "-s", "-z"], { encoding: "utf8" });
+    return new Map(
+      out
+        .split("\0")
+        .filter(Boolean)
+        .map((entry) => {
+          const [meta, path] = entry.split("\t");
+          return [path, meta.split(" ")[0]];
+        }),
+    );
+  } catch {
+    return null;
+  }
+}
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -1062,10 +1083,21 @@ export function problems(root, models) {
     }),
   ).filter(Boolean);
   models ??= attempt(() => loadModels(root));
+  // FIX [Claude AI - Opus 5] (2026-10-10 11:58:03): Windows cannot represent
+  // the POSIX executable bit, so statSync reports 0o666 for every file and the
+  // hook executability check read false for scripts git records as 100755.
+  // Skipping it there would leave a check that cannot tell "executable" from
+  // "unknowable", so read the mode git records, which is what an install
+  // copies. Outside a work tree there is nothing better than the stat.
+  const recordedModes = process.platform === "win32" ? gitRecordedModes(pluginRoot) : null;
   const statOf = (rel) => {
     const full = join(pluginRoot, rel);
     if (!existsSync(full) || !pathIsInside(realpathSync(pluginRoot), realpathSync(full))) return null;
-    return statSync(full);
+    const st = statSync(full);
+    const recorded = recordedModes?.get(toPosix(rel));
+    if (recorded === undefined) return st;
+    const mode = (st.mode & ~0o111) | (recorded === "100755" ? 0o111 : 0);
+    return Object.assign(Object.create(Object.getPrototypeOf(st)), st, { mode });
   };
   if (models) {
     attempt(() => {
