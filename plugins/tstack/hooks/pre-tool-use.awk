@@ -83,12 +83,25 @@ function script_rule(cmd,    n, T, Q, first, script, runner, rel) {
   if (script_contract(rel, runner, T, first + 1, n)) allow()
 }
 
+# FIX [Claude AI - Opus 5] (2026-10-10 08:41:30): a Windows path is absolute
+# without a leading slash. safe_path tested only for "/", so C:/x looked
+# relative and was pasted onto cwd; resolve() then reduced that to the longest
+# existing prefix, which is cwd, so the result always began with cwd and
+# containment passed. Every absolute Windows path was approved whatever it
+# pointed at. Checked by character rather than by regex to keep the "\"
+# out of an ERE literal.
+function absolute(p,    head) {
+  if (substr(p, 1, 1) == "/") return 1
+  head = substr(p, 2, 2)
+  return (head == ":/" || head == ":\\") && substr(p, 1, 1) ~ /[A-Za-z]/
+}
+
 # Called only for path operands identified by a script contract.
 function safe_path(p,    n, seg, i) {
   if (p == "") return 0
   n = split(p, seg, "/")
   for (i = 1; i <= n; i++) if (seg[i] == "..") return 0
-  if (substr(p, 1, 1) != "/") {
+  if (!absolute(p)) {
     if (cwd == "") return 0
     p = cwd "/" p
   }

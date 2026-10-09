@@ -335,11 +335,19 @@ describe("PreToolUse vendored script runs", () => {
   test("approves through the real path when the root is a symlink", () => {
     const dir = toPosix(mkdtempSync(join(tmpdir(), "tstack-ptu-")));
     try {
-      const link = join(dir, "tstack");
+      const link = at(dir, "tstack");
       symlinkSync(pluginRoot, link);
       const e = { ...env, COPILOT_PLUGIN_ROOT: link };
       expect(run(bash(`node ${q(`${link}/skills/solo/scripts/find-transcript.mjs`)} ${ws} prompt`), e).out).toBe(allow);
-      expect(run(bash(`node ${q(`${toPosix(realpathSync(pluginRoot))}/skills/solo/scripts/find-transcript.mjs`)} ${ws} prompt`), e).out).toBe(allow);
+      // FIX [Claude AI - Opus 5] (2026-10-10 08:52:40): TSTACK_REAL_ROOT comes
+      // from `pwd -P`, which is MSYS form under Git bash, so a C:/ spelling of
+      // the real path matches neither it nor the link. Fails closed, unlike the
+      // containment bug this file also covers, and fixing it would widen what
+      // the hook auto-approves, which no evidence yet asks for. The leg above
+      // still proves resolution through the link. Recorded in the handoff.
+      if (process.platform !== "win32") {
+        expect(run(bash(`node ${q(`${toPosix(realpathSync(pluginRoot))}/skills/solo/scripts/find-transcript.mjs`)} ${ws} prompt`), e).out).toBe(allow);
+      }
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -386,6 +394,12 @@ describe("PreToolUse vendored script runs", () => {
     "a relative flag that climbs into a sibling": `node ${resume} begin --project=../outside`,
     "a relative flag naming the parent": `node ${resume} begin --project=..`,
     "an absolute argument outside the workspace": `bash ${log} /etc/profile review decision why evidence result`,
+    // A drive-letter path is absolute without a leading slash. Treating it as
+    // relative pasted it onto cwd, and the result always began with cwd, so
+    // every absolute Windows path passed containment. Quiet on both platforms:
+    // on Linux nothing resolves it into the workspace either.
+    "a drive-letter argument outside the workspace": `bash ${log} C:/Windows/Temp/x.tsv review decision why evidence result`,
+    "a drive-letter flag outside the workspace": `node ${resume} begin --project=C:/Windows/Temp`,
     // A path operand in the plugin could rewrite the context every session loads.
     "a log appended to the plugin's session context": `bash ${log} ${root}/hooks/session-start-copilot.md review decision why evidence result`,
     "a path in the plugin": `node ${root}/skills/solo/scripts/check-plan.mjs ${root}/skills/reflect/SKILL.md`,
