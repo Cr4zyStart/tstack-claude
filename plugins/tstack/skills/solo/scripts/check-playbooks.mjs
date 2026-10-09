@@ -55,17 +55,22 @@ function invokedDirectly() {
 }
 
 if (invokedDirectly()) {
+  // FIX [Claude AI - Opus 5] (2026-10-10 12:26:09): resolve() and join() use
+  // the native separator, so on Windows these lines named "<root>\nope", which
+  // reads as an escape and which nothing matching "<root>/nope" can use. The
+  // paths below are for the reader; the filesystem calls keep the native form.
+  const shown = (p) => p.split("\\").join("/");
   const root = resolve(process.argv[2] ?? ".");
   const directory = join(root, ".agents/playbooks");
   const problems = statSync(root, { throwIfNoEntry: false })?.isDirectory()
     ? checkPlaybooks(root)
-    : [`${root} is not a directory`];
+    : [`${shown(root)} is not a directory`];
   if (problems.length > 0) {
     console.error(problems.join("\n"));
     process.exitCode = 1;
   } else if (existsSync(directory)) {
     console.log("Every project playbook matches this tstack's playbooks.");
   } else {
-    console.log(`No project playbooks to check: ${directory} does not exist.`);
+    console.log(`No project playbooks to check: ${shown(directory)} does not exist.`);
   }
 }

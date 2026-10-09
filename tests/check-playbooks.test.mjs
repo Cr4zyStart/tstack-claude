@@ -25,7 +25,11 @@ function run(playbooks, { throughSymlink = false, cwd = ".", args = ["."] } = {}
       symlinkSync(script, entry);
     }
     const result = spawnSync("node", [entry, ...args.map((arg) => join(root, arg))], { encoding: "utf8", cwd: workingDirectory });
-    return { code: result.status, out: (result.stdout + result.stderr).replaceAll(root, "<root>") };
+    // FIX [Claude AI - Opus 5] (2026-10-10 12:26:09): the check reports paths
+    // with forward slashes, so on Windows the native spelling of root never
+    // matched and every expectation saw an absolute temp path. Fold both.
+    const out = (result.stdout + result.stderr).replaceAll(root, "<root>").replaceAll(root.split("\\").join("/"), "<root>");
+    return { code: result.status, out };
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
