@@ -1,5 +1,5 @@
 // CLI regressions against installed Pi, with no model calls or credentials.
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { execFileSync, spawnSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -7,6 +7,11 @@ import { join } from "node:path";
 import { AgentRunner } from "../../plugins/tstack/pi/agents.ts";
 import { findPiPackage } from "../../tools/pi-package.mjs";
 import { useWorld } from "./harness.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const piDir = findPiPackage();
 const noNode = spawnSync("node", ["--version"]).status !== 0;

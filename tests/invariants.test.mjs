@@ -2,13 +2,18 @@
 // that quietly matches nothing looks identical to a pass, and that already
 // happened once (the 0.9.10 quad check hunted a retired slug for a whole
 // release), so every check gets a fixture that must trip it.
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, setDefaultTimeout, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { agentSkills, pluginAgentPaths, validatePluginLayout } from "../tools/generate.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const shippedAgents = pluginAgentPaths(fileURLToPath(new URL("../plugins/tstack", import.meta.url))).map((p) =>
   basename(p, ".md"),

@@ -1,9 +1,14 @@
-import { test } from 'bun:test';
+import { setDefaultTimeout, test } from 'bun:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:34:08): bun defaults to 5 s, and a
+// git or spawn fixture on Windows routinely needs longer. Three tests were
+// failing on the clock rather than on their subject.
+setDefaultTimeout(30_000);
 
 const mergeSafety = readFileSync(new URL('../plugins/tstack/skills/solo/references/merge-safety.md', import.meta.url), 'utf8');
 const recipe = [...mergeSafety.matchAll(/^```sh\n([\s\S]*?)^```$/gm)]
@@ -23,6 +28,11 @@ function fixture(body) {
     run(root, 'init', '-b', 'main');
     run(root, 'config', 'user.email', 'fixture@example.invalid');
     run(root, 'config', 'user.name', 'Fixture');
+    // FIX [Claude AI - Opus 5] (2026-10-10 06:21:44): Git for Windows checks
+    // out with CRLF when the machine sets core.autocrlf, so content written as
+    // LF read back as CRLF. These tests assert on restacked content, not on
+    // the machine's line-ending policy.
+    run(root, 'config', 'core.autocrlf', 'false');
     const commit = (file, content) => {
       writeFileSync(join(root, file), content);
       run(root, 'add', file);

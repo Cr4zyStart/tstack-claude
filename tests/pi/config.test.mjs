@@ -1,11 +1,16 @@
 // The settings the extension derives from its flags, environment, and model sheet.
-import { expect, test } from "bun:test";
+import { expect, setDefaultTimeout, test } from "bun:test";
 import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { defaultSettings, loadAgentTypes, readSheet } from "../../plugins/tstack/pi/config.ts";
 import { chmodDeniesReads } from "../session-hook-sheets.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 test("depth comes from the reader on each use and PI_CODING_AGENT_DIR moves the sheet", () => {
   let flag = 0;

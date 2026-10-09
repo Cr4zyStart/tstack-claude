@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, afterEach, beforeAll, describe, expect, setDefaultTimeout, test } from "bun:test";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
   chmodSync,
@@ -29,6 +29,11 @@ import {
   parseSubstitutions,
   syncComponent,
 } from "../tools/sync.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:34:08): bun defaults to 5 s, and a
+// git or spawn fixture on Windows routinely needs longer. Three tests were
+// failing on the clock rather than on their subject.
+setDefaultTimeout(30_000);
 
 const RULES = parseSubstitutions(JSON.parse(readFileSync(join(import.meta.dir, "../tools/substitutions.json"), "utf8")));
 

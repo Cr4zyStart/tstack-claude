@@ -2,12 +2,17 @@
 // `view` of the plugin's own files and strict vendored-script runs, denies
 // tstack agents on models a valid sheet does not name, and stays silent for
 // everything else.
-import { afterAll, describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, setDefaultTimeout, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:34:08): bun defaults to 5 s, and a
+// git or spawn fixture on Windows routinely needs longer. Three tests were
+// failing on the clock rather than on their subject.
+setDefaultTimeout(30_000);
 
 const pluginRoot = fileURLToPath(new URL("../plugins/tstack/", import.meta.url));
 const preToolUse = JSON.parse(readFileSync(join(pluginRoot, "hooks/copilot-hooks.json"), "utf8")).hooks.PreToolUse;

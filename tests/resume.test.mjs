@@ -1,10 +1,15 @@
-import { test } from 'bun:test';
+import { setDefaultTimeout, test } from 'bun:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:34:08): bun defaults to 5 s, and a
+// git or spawn fixture on Windows routinely needs longer. Three tests were
+// failing on the clock rather than on their subject.
+setDefaultTimeout(30_000);
 
 const cli = fileURLToPath(new URL('../plugins/tstack/skills/solo/scripts/resume.mjs', import.meta.url));
 function fixture(body) {
@@ -142,8 +147,16 @@ test('reuses a project artifact without making a competing copy', () => fixture(
 test('rejects symlink artifacts outside the project', () => fixture(({ run }) => {
   const saved = note(run);
   rmSync(saved.artifact);
-  symlinkSync('/etc/hosts', saved.artifact);
-  const result = run('publish', '--note', saved.note, '--artifact', saved.artifact);
-  assert.equal(result.status, 1);
-  assert.match(result.value.detail, /must belong to this project/);
+  // FIX [Claude AI - Opus 5] (2026-10-10 06:21:44): /etc/hosts does not exist
+  // on Windows, so the link dangled and the stat failed before the project
+  // check could run. Any real file outside the project proves the same thing.
+  const outside = realpathSync(mkdtempSync(join(tmpdir(), 'resume-outside-')));
+  try {
+    const target = join(outside, 'target.txt');
+    writeFileSync(target, 'outside\n');
+    symlinkSync(target, saved.artifact);
+    const result = run('publish', '--note', saved.note, '--artifact', saved.artifact);
+    assert.equal(result.status, 1);
+    assert.match(result.value.detail, /must belong to this project/);
+  } finally { rmSync(outside, { recursive: true, force: true }); }
 }));

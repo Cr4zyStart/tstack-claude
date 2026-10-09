@@ -1,12 +1,17 @@
 // setup-tstack's check-sheet.sh, run for real. It shares sheet.awk with the
 // GitHub Copilot SessionStart hook, so a sheet it passes is one the hook adds
 // to the session context.
-import { afterAll, describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, setDefaultTimeout, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const pluginRoot = fileURLToPath(new URL("../plugins/tstack/", import.meta.url));
 const script = join(pluginRoot, "skills/setup-tstack/scripts/check-sheet.sh");

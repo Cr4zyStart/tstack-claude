@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, setDefaultTimeout, test } from "bun:test";
 import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
@@ -7,6 +7,11 @@ import { basename, dirname, join } from "node:path";
 
 import { candidates, findTranscript, openingPrompt } from "../plugins/tstack/skills/solo/scripts/find-transcript.mjs";
 import { removeDuring } from "./remove-during.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const script = join(import.meta.dir, "../plugins/tstack/skills/solo/scripts/find-transcript.mjs");
 // FIX [Claude AI - Opus 5] (2026-10-09 19:05:40): import() needs a file URL. A bare

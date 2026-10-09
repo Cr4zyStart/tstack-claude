@@ -1,11 +1,16 @@
 // The note a tool result carries when its file matches a skill's `paths:` globs.
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { registerPathSkills } from "../../plugins/tstack/pi/path-skills.ts";
 import { pluginRoot, useWorld } from "./harness.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const setup = useWorld();
 

@@ -1,7 +1,7 @@
 // GitHub Copilot build contracts: the mapping names every Claude-specific term
 // the skills use, every skill with a Codex preamble also has the Copilot one,
 // and Copilot setup writes every role in models.json exactly once.
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +10,11 @@ import { loadLeadLines, loadModels, noteSkills } from "../tools/generate.mjs";
 import { RUNTIMES } from "../tools/runtimes.mjs";
 import { readdirSync } from "node:fs";
 import { markdownFiles, posixRel } from "../tools/validate-skills.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const skillsDir = join(repoRoot, "plugins/tstack/skills");

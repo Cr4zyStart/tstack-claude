@@ -1,9 +1,14 @@
 // PiChild against small scripted children, for stream edge cases the fake pi
 // cannot produce.
-import { expect, test } from "bun:test";
+import { expect, setDefaultTimeout, test } from "bun:test";
 
 import { PiChild } from "../../plugins/tstack/pi/child.ts";
 import { sleep } from "./harness.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const opts = { cwd: process.cwd(), exitGraceMs: 1000 };
 const scripted = (script) => new PiChild(process.execPath, ["-e", script], opts, "p");

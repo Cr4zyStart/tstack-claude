@@ -2,13 +2,18 @@
 // **laziness-protocol** principle skill", "(**principle-x**)" in solo's
 // index, and "`/name`" slash forms. Nothing resolved them until now, so a
 // renamed directory left dangling references no tool could see.
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { agentSkills } from "../tools/generate.mjs";
 import { markdownFiles, posixRel } from "../tools/validate-skills.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const skillsDir = fileURLToPath(new URL("../plugins/tstack/skills", import.meta.url));
 const names = new Set(agentSkills(skillsDir).map((s) => s.name));

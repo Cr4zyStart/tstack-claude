@@ -1,12 +1,17 @@
 // Documentation states counts and the upstream pin in prose. Each is derivable from
 // the tree, so this pins every occurrence to its source instead of trusting a
 // hand edit to keep up.
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { agentSkills, publicSkills } from "../tools/generate.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const documentation = ["README.md", "docs/reference.md"]

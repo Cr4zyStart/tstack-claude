@@ -1,5 +1,5 @@
 // The compiler options the Pi typecheck derives from where Pi is installed.
-import { expect, test } from "bun:test";
+import { expect, setDefaultTimeout, test } from "bun:test";
 import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -7,6 +7,11 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
 import { piCompilerPaths } from "../tools/pi-package.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const DEP_FILES = [
   "@types/node/index.d.ts",

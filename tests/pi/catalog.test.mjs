@@ -1,8 +1,13 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { findPiPackage } from "../../tools/pi-package.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const root = join(import.meta.dir, "../..");
 const piModels = JSON.parse(readFileSync(join(root, "plugins/tstack/models.json"), "utf8")).pi.models;

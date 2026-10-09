@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, setDefaultTimeout, test } from "bun:test";
 import { execFileSync, spawnSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
@@ -8,6 +8,11 @@ import { pathToFileURL } from "node:url";
 import { defaultSettings, TSTACK_STATE_DIR } from "../plugins/tstack/pi/config.ts";
 import { audit, classify, defaultTranscriptRoots, duSize, lastChats, pathSpellings, symlinkTargets } from "../plugins/tstack/skills/solo/scripts/worktree-audit.mjs";
 import { removeDuring } from "./remove-during.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:34:08): bun defaults to 5 s, and a
+// git or spawn fixture on Windows routinely needs longer. Three tests were
+// failing on the clock rather than on their subject.
+setDefaultTimeout(30_000);
 
 const script = join(import.meta.dir, "../plugins/tstack/skills/solo/scripts/worktree-audit.mjs");
 // node's ESM loader takes a file URL, not a drive-lettered path.

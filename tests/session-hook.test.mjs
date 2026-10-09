@@ -1,6 +1,6 @@
 // Each runtime's shipped SessionStart command, run for real: the mandate is
 // injected unless that runtime's model sheet turns it off.
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -9,6 +9,11 @@ import { fileURLToPath } from "node:url";
 
 import { agentSkills } from "../tools/generate.mjs";
 import { sheetCases, writeSheet } from "./session-hook-sheets.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const pluginRoot = fileURLToPath(new URL("../plugins/tstack/", import.meta.url));
 const mandate = readFileSync(join(pluginRoot, "hooks/session-start-context.md"), "utf8");

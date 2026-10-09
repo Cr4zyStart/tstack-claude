@@ -7,7 +7,7 @@
 // TSTACK_PI_LIVE_PROVIDER (default openai), or through the `pi models:`
 // line in TSTACK_PI_LIVE_MODELS when it is set. The parent runs on the sonnet
 // alias. TSTACK_PI_LIVE_KEEP=1 keeps the throwaway directory for inspection.
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, setDefaultTimeout, test } from "bun:test";
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
@@ -17,6 +17,11 @@ import { fileURLToPath } from "node:url";
 import { openingPrompt } from "../../plugins/tstack/skills/solo/scripts/find-transcript.mjs";
 import { agentBody, alive as pidAlive, gitRepo, pluginRoot, readEntries, sleep } from "./harness.mjs";
 import { agentByDescription, assistantModels, childEntries, descendants, findSessionFile, jsonLines, liveModels, MINUTE, PiRpc, processTable, sections, textOf } from "./live-harness.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const LIVE = process.env.TSTACK_PI_LIVE === "1";
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));

@@ -3,13 +3,18 @@
 // the generator loads it, and a role label is the runtime join key between the
 // override sheet the user writes and the prose that tells the agent which role
 // to look up.
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadModels, parseModels, regions } from "../tools/generate.mjs";
 import { markdownFiles, posixRel } from "../tools/validate-skills.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const skillsDir = join(repoRoot, "plugins/tstack/skills");

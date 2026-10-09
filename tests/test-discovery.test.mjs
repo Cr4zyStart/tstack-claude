@@ -2,9 +2,14 @@
 // `bun test tests/`. The vendored solo scripts import packages that
 // only their own `bun install` provides, so loading them from the root fails
 // until some earlier run has installed them.
-import { expect, test } from "bun:test";
+import { expect, setDefaultTimeout, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 

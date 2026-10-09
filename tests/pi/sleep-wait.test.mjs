@@ -1,10 +1,15 @@
 // The sleep rule as a table: each row is a command line and whether it blocks.
 // The last two groups are the rule's known misses and over-blocks; a row that
 // moves between groups is a decision, not a drift.
-import { expect, test } from "bun:test";
+import { expect, setDefaultTimeout, test } from "bun:test";
 
 import { isForegroundWait } from "../../plugins/tstack/pi/sleep-wait.ts";
 import { useWorld, waitFor } from "./harness.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const setup = useWorld();
 

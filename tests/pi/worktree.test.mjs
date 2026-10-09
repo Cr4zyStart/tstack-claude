@@ -1,12 +1,17 @@
 // settleWorktree against real git state: it must never drop a commit the agent
 // made. Then the agent tool's worktree isolation over it.
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { ensureWorktree, planWorktree, settleWorktree } from "../../plugins/tstack/pi/worktree.ts";
 import { gitRepo, resultText, useWorld, waitFor } from "./harness.mjs";
+
+// FIX [Claude AI - Opus 5] (2026-10-10 06:52:19): bun defaults to 5 s. A git
+// or spawn fixture on Windows routinely needs longer, and a suite whose files
+// disagree about the clock produces reds that move between runs.
+setDefaultTimeout(30_000);
 
 const setup = useWorld();
 
