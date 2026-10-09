@@ -19,7 +19,7 @@ Find each skill's instructions in the [skills tree](../plugins/tstack/skills/).
 | `/how` | walk through how a subsystem works |
 | `/why` | investigate why something was built this way (parallel multi-MCP evidence) |
 | `/architect` | settle types and module shape before writing code that crosses a function boundary |
-| `/interrogate` | have three different models try to break a diff |
+| `/interrogate` | break a diff from several independent stances, one per free lane and the rest as your own passes |
 | `/correct` | find the mistakes agents keep repeating in a repo and make each one impossible, enforced at the highest level that works |
 | `/tdd` | fix a bug by writing the failing test first, then the fix |
 | `/technical-writing` | write docs, RFCs, readmes, PR descriptions, and commit messages to one layered standard |
@@ -103,14 +103,9 @@ The [README installation](../README.md#codex) registers that catalog with `codex
 
 OpenAI documents [marketplace registration and the plugin format](https://developers.openai.com/plugins/build/plugins#add-a-marketplace-from-the-cli). If your CLI lacks `plugin add`, use the plugin browser after registering the marketplace, or use the [skills-only installation](#shared-skills-installation).
 
-Request `solo` by name or select its entry, such as `tstack:solo`. To enable parallel subagents:
+Request `solo` by name or select its entry, such as `tstack:solo`.
 
-```toml
-[features]
-multi_agent = true
-```
-
-Add this setting to `~/.codex/config.toml` if subagents are disabled. Skills such as `interrogate`, and `architect` use parallel agents. The [mapping](../plugins/tstack/skills/solo/references/codex-tools.md) describes a sequential fallback and translates Claude tool names, model defaults, and verification instructions.
+**Leave Codex's `multi_agent` feature off.** tstack never spawns on any runtime, so nothing in the plugin calls Codex's spawn primitive, and turning it on buys you nothing. Skills that upstream ran as parallel agents -- `interrogate`, `architect` -- run their seats as successive passes here, each committing to a different stance. The [mapping](../plugins/tstack/skills/solo/references/codex-tools.md) says the same and translates Claude tool names, model defaults, and verification instructions.
 
 For optional slash-command shortcuts, run this from the clone's root:
 
