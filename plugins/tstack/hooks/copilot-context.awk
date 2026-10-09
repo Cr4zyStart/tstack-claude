@@ -1,7 +1,8 @@
 # Prints the GitHub Copilot SessionStart output: one JSON object whose
 # additionalContext is the solo mandate with the Copilot notes inside its
 # closing tag. Run after json.awk and setup-tstack's sheet.awk, with the sheet
-# as input and -v hooks=<this directory> found=<1 when the sheet exists>.
+# as input, TSTACK_HOOKS=<this directory> in the environment, and
+# -v found=<1 when the sheet exists>.
 # Only a valid sheet's known role lines reach the context, rebuilt from their
 # checked values, so no other text in the sheet does.
 { sheet_add($0) }
@@ -30,14 +31,21 @@ END {
 }
 
 # The file's text without its trailing newline.
-function text(name,    file, line, s, first) {
-  file = hooks "/" name
+function text(name,    file, line, s, first, r) {
+  file = ENVIRON["TSTACK_HOOKS"] "/" name
   s = ""
   first = 1
-  while ((getline line < file) > 0) {
+  while ((r = (getline line < file)) > 0) {
     s = s (first ? "" : "\n") line
     first = 0
   }
   close(file)
+  # FIX [Claude AI - Opus 5] (2026-10-09 17:30:59): an unreadable file returned
+  # "" and the mandate came out as blank lines, which hid the cause for a whole
+  # session. getline returns -1 on error and 0 at EOF, so only -1 is a failure.
+  if (r < 0) {
+    printf "copilot-context.awk: cannot read %s\n", file | "cat 1>&2"
+    exit 1
+  }
   return s
 }
