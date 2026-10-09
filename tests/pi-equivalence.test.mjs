@@ -39,7 +39,10 @@ describe("docs/pi-equivalence.md", () => {
   const titles = testTitles();
 
   test("lists every mechanism once, with six cells", () => {
-    expect(rows.length).toBe(62);
+    // FIX [Claude AI - Opus 5] (2026-10-09 19:05:40): 62 -> 42. The 21 rows
+    // describing the `agent` tool went with its tests; pi/agent-tools.ts never
+    // registers it, so they documented a tool that does not exist.
+    expect(rows.length).toBe(42);
     expect(new Set(rows.map((r) => r.id)).size).toBe(rows.length);
     for (const r of rows) expect(r.cells).toBe(6);
   });

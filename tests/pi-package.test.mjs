@@ -1,5 +1,6 @@
 // The compiler options the Pi typecheck derives from where Pi is installed.
 import { expect, test } from "bun:test";
+import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -39,6 +40,10 @@ test.each([
 
 const PI = join("@earendil-works", "pi-coding-agent");
 const PI_PACKAGE_MODULE = resolve(import.meta.dir, "../tools/pi-package.mjs");
+// FIX [Claude AI - Opus 5] (2026-10-09 19:05:40): import() needs a file URL. A bare
+// Windows path makes Node read "C:" as the URL protocol and throw
+// ERR_UNSUPPORTED_ESM_URL_SCHEME.
+const PI_PACKAGE_URL = pathToFileURL(PI_PACKAGE_MODULE).href;
 
 // Bun's child processes ignore edits to process.env, so run findPiPackage in a fresh bun with HOME, npm, and the
 // bun variables pointed into a temp dir. Only the fake tree can match.
@@ -48,7 +53,7 @@ function findPiUnder(root, env, globalDir) {
   writeFileSync(join(piDir, "package.json"), "{}");
   const childEnv = { ...process.env, HOME: join(root, "home"), npm_config_prefix: join(root, "npm"), ...env };
   for (const key of ["PI_PACKAGE_DIR", "BUN_INSTALL", "BUN_INSTALL_GLOBAL_DIR", "XDG_CACHE_HOME"]) if (!(key in env)) delete childEnv[key];
-  const run = spawnSync(process.execPath, ["-e", `import(${JSON.stringify(PI_PACKAGE_MODULE)}).then((m) => console.log(m.findPiPackage()))`], { env: childEnv, encoding: "utf8" });
+  const run = spawnSync(process.execPath, ["-e", `import(${JSON.stringify(PI_PACKAGE_URL)}).then((m) => console.log(m.findPiPackage()))`], { env: childEnv, encoding: "utf8" });
   return { found: run.stdout.trim(), piDir };
 }
 

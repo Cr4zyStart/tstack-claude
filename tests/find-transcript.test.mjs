@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -8,6 +9,10 @@ import { candidates, findTranscript, openingPrompt } from "../plugins/tstack/ski
 import { removeDuring } from "./remove-during.mjs";
 
 const script = join(import.meta.dir, "../plugins/tstack/skills/solo/scripts/find-transcript.mjs");
+// FIX [Claude AI - Opus 5] (2026-10-09 19:05:40): import() needs a file URL. A bare
+// Windows path makes Node read "C:" as the URL protocol and throw
+// ERR_UNSUPPORTED_ESM_URL_SCHEME.
+const scriptUrl = pathToFileURL(script).href;
 const noNode = spawnSync("node", ["--version"]).status !== 0;
 
 const meta = JSON.stringify({ type: "bridge-session", sessionId: "abc" });
@@ -114,7 +119,7 @@ describe("find-transcript", () => {
       const kept = transcript(dir, "kept.jsonl", [meta], 100);
       const flat = transcript(dir, "flat.jsonl", [meta], 200);
       transcript(dir, "s1/s1.jsonl", [meta], 300);
-      const body = `const { candidates } = await import(${JSON.stringify(script)});
+      const body = `const { candidates } = await import(${JSON.stringify(scriptUrl)});
         console.log(JSON.stringify(candidates(${JSON.stringify(dir)}).map(({ path }) => path)));`;
       const run = removeDuring("readdirSync", dir, [join(dir, "s1"), flat], body);
       expect(run.stderr).toBe("");
@@ -329,7 +334,7 @@ describe("find-transcript", () => {
     () => {
       const run = spawnSync(
         "node",
-        ["-e", `import(${JSON.stringify(script)}).then((m) => console.log(typeof m.findTranscript))`, "not-a-file"],
+        ["-e", `import(${JSON.stringify(scriptUrl)}).then((m) => console.log(typeof m.findTranscript))`, "not-a-file"],
         { encoding: "utf8" },
       );
       expect(run.stderr).toBe("");
