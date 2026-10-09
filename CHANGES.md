@@ -2,6 +2,56 @@
 
 This file is the release changelog, with one `## <version> - <title>` entry per release, newest first. The Cursor-to-Claude rewrite rules live in [`tools/substitutions.json`](tools/substitutions.json), and the [sync boundary](CONTRIBUTING.md#the-sync-boundary) in `CONTRIBUTING.md` defines how a change to upstream's skill content is declared.
 
+## 0.9.76 - clear the spawn-era prose, turn CI green, and stop the Windows checks reading false
+
+The fork's first release. Every commit since `f3d00e9` shipped under the
+inherited `0.9.75`, which means none of it reached an installed copy, because
+plugin auto-update installs by version number.
+
+**The skills still spoke as if they spawned.** tstack removed agent spawning
+but kept the vocabulary, the dispatch instructions and the role names, and no
+test asserts on prose. `plugin.json` stamps `"agents": []`, so the claim that
+an `@<level>` suffix dispatches through `tstack:effort-<level>` named a child
+that cannot exist. It came out of the stamped effort section, out of
+`setup-tstack` step 3, and out of `overrideSheetBlock()`, which is the text
+written into every user's model sheet (`4aa643f`, `aac3538`, `250b97b`). The
+last surviving instruction to launch investigators concurrently left
+`why/SKILL.md`, and six role labels that no playbook named reached the prose
+that uses them (`3e3de00`). `inherit-parent` and `auto` are no longer explained
+by an `Agent` or `task` call that omits `model`, since neither call is made.
+They mean stay on the session's model.
+
+**Deleted skills were still named in prose, in 13 files.** `arena`, `swarm`,
+`reflect` and `automate-me` went in the 63-to-43 consolidation (`1fb5d0b`).
+`blast-radius` step 6 told the reader to run it as an `arena`, a skill that is
+not installed, and `worktree-cleanup` step 3 still said to fan subagents out to
+read transcripts. `orchestrate` now sends contested decompositions to
+`architect`. The remaining mentions were vocabulary, where a swarm verdict is a
+verification verdict and arena lane recitals are lane-by-lane recitals.
+`eval.md` keeps "arena" on purpose, in a denylist of words a blind-eval
+candidate must not see.
+
+**CI is green for the first time since the fork's first commit**, 13 of 13 from
+12 of 14 (`c263d11`, `db6ca53`, `2454d8c`, `535c61e`, `f3c7b82`). Nearly every
+failure traced to the same root cause as the prose above. Five Pi test files
+drove through an `agent` tool the extension deliberately never registers, the
+Fork registry job pointed at the upstream repository, and `docs/reference.md`
+promised a Codex `multi_agent` setting the mapping tells you to leave off
+(`4eda0da`). Install, support and metadata URLs now point at this fork
+(`4e02935`).
+
+**Several Windows checks had stopped checking rather than failing** (`d06864d`).
+`walk()` built paths with `join()` and `relative()` returns separator-native
+output, so on Windows every `endsWith("/SKILL.md")` read false. Measured
+against the real tree, the exclusion of the two mapping files removed 0 of 2,
+the skill set in `copilot.test.mjs` held 0 of 43 entries, and `models.test.mjs`
+never excluded a stamped region, which is why it read 31 pass and 0 fail
+locally while 6 cases failed on Linux. `walk()` now emits posix separators,
+which `agent-skills.test.mjs` already pinned as the contract, and `posixRel()`
+moves out of `generate.mjs` into `validate-skills.mjs` as the one producer of
+relative paths for comparison. A guard case asserts the corpus is real, so the
+bug cannot return silently.
+
 ## 0.9.75 - base delegate worktrees on the branch and separate parallel todolists
 
 The Feature playbook notes that Claude Code's `isolation: "worktree"` branches from the remote default branch unless `worktree.baseRef` is `"head"`. A delegate that builds on commits the default branch lacks now gets a worktree the parent creates from `HEAD`, and its brief names that base commit ([#228](https://github.com/michael-denyer/pstack-claude/issues/228)).
