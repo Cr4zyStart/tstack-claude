@@ -2,6 +2,18 @@
 
 This file is the release changelog, with one `## <version> - <title>` entry per release, newest first. The Cursor-to-Claude rewrite rules live in [`tools/substitutions.json`](tools/substitutions.json), and the [sync boundary](CONTRIBUTING.md#the-sync-boundary) in `CONTRIBUTING.md` defines how a change to upstream's skill content is declared.
 
+## 0.9.79 - refuse the bare relative() behind six separator bugs
+
+A lint now refuses a bare `relative()` call anywhere in the repository. Six
+separator bugs have shipped, each one a path built with the native separator
+reaching a consumer that splits on a forward slash, and ten of those sites were
+a bare `relative()` where `posixRel` was available.
+
+Nothing an install runs behaves differently. The only shipped file that changed
+is `resume.mjs`, which gains a comment recording why its `inside()` keeps the
+native separator: it tests a `..` prefix against `sep`, so folding would break
+it. The lint reads that comment, which is why it is worded the way it is.
+
 ## 0.9.78 - report playbook-check paths a reader can use
 
 The project-playbook check named paths with the native separator, so on Windows
