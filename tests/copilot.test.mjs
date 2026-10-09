@@ -63,7 +63,9 @@ describe("copilot-tools.md coverage", () => {
     const noted = [...table.matchAll(/^\| `([a-z0-9-]+)` \|/gm)].map((m) => m[1]);
     const skills = new Set(skillText.filter(([rel]) => rel.endsWith("/SKILL.md")).map(([rel]) => rel.split("/")[0]));
     for (const name of noted) expect(skills.has(name)).toBe(true);
-    for (const name of ["interrogate", "setup-tstack", "no-comments", "reflect", "recall", "babysit"]) {
+    // FIX [Claude AI - Opus 5] (2026-10-09 20:15:30): dropped "reflect" and "recall",
+    // deleted in the 63 -> 43 consolidation.
+    for (const name of ["interrogate", "setup-tstack", "no-comments", "babysit"]) {
       expect(noted).toContain(name);
     }
   });

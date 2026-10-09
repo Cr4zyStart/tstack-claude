@@ -859,12 +859,12 @@ describe("plan, changes, apply", () => {
   test("problems reports every broken contract, and --check prints each and exits 1", () => {
     const root = repoCopy();
     append(root, ...STRAY_SLUG);
-    append(root, "plugins/tstack/skills/deslop/SKILL.md", "\n[gone](missing.md)\n");
+    append(root, "plugins/tstack/skills/how/SKILL.md", "\n[gone](missing.md)\n");
     append(root, "plugins/tstack/skills/unslop/SKILL.md", '\nsubagent_type: "tstack-agent"\n');
     const failures = problems(root);
     expect(failures).toEqual([
       expect.stringContaining("plugins/tstack/skills/tdd/SKILL.md:"),
-      "invalid local markdown links:\ndeslop/SKILL.md -> missing.md (missing)",
+      "invalid local markdown links:\nhow/SKILL.md -> missing.md (missing)",
       expect.stringContaining("skills/unslop/SKILL.md:"),
     ]);
     const check = generate(root, "--check");

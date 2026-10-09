@@ -4,8 +4,8 @@
   "version": "0.9.75",
   "description": "If you want to go fast, go deep first. tstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence. Pi package of the Claude Code plugin; skills are shared, tool names resolve via skills/solo/references/pi-tools.md. Original pstack by Lauren Tan (tstack).",
   "author": {
-    "name": "Michael Denyer",
-    "url": "https://github.com/michael-denyer"
+    "name": "Cr4zyStart",
+    "url": "https://github.com/Cr4zyStart"
   },
   "homepage": "https://github.com/Cr4zyStart/tstack-claude",
   "repository": "https://github.com/Cr4zyStart/tstack-claude",
@@ -17,13 +17,13 @@
     "workflow",
     "principles",
     "agent-style",
-    "subagents",
+    "lanes",
     "unslop",
     "claude-code",
     "skills",
     "tdd",
     "code-review",
-    "parallel-agents",
+    "token-frugal",
     "codex",
     "opencode",
     "gemini-cli",

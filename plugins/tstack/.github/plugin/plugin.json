@@ -4,8 +4,8 @@
   "version": "0.9.75",
   "description": "If you want to go fast, go deep first — without burning your weekly budget. tstack is a token-frugal fork of pstack: it never spawns subagents. One session does the work, reading only the lines it needs; when you want more hands, it messages the Claude sessions you already opened (lanes) instead of creating new ones. Same rigorous workflows, a fraction of the tokens. Forked from michael-denyer/pstack-claude. Original pstack by Lauren Tan (tstack).",
   "author": {
-    "name": "Michael Denyer",
-    "url": "https://github.com/michael-denyer"
+    "name": "Cr4zyStart",
+    "url": "https://github.com/Cr4zyStart"
   },
   "homepage": "https://github.com/Cr4zyStart/tstack-claude",
   "repository": "https://github.com/Cr4zyStart/tstack-claude",
