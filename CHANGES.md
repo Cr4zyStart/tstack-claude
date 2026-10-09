@@ -2,6 +2,33 @@
 
 This file is the release changelog, with one `## <version> - <title>` entry per release, newest first. The Cursor-to-Claude rewrite rules live in [`tools/substitutions.json`](tools/substitutions.json), and the [sync boundary](CONTRIBUTING.md#the-sync-boundary) in `CONTRIBUTING.md` defines how a change to upstream's skill content is declared.
 
+## 0.9.77 - keep the sheet's carriage returns intact and stop awk eating a Windows plugin path
+
+Three carriage-return mechanisms across four sites, plus an awk escape bug,
+dropped characters the sheet contract has to keep. That turned 40 local Windows
+tests red while Linux CI stayed green, so the failures read as one Windows
+mystery rather than as the handful of ordinary bugs they were.
+
+The carriage-return mechanisms are these three. Command substitution on Git
+for Windows strips a trailing CRLF rather than only the LF, which bites twice,
+once in the reader and once where the hook captures it. `sed` treats CRLF as
+the line terminator and then removed a second carriage return with its own
+substitution. `grep -x` strips one before it compares. A sheet whose value
+ended in a carriage return therefore compared equal to `off`, so the hook
+turned itself off when the contract says it must stay on. Each stage alone was
+enough to cause it, which is why fixing them one at a time kept looking like
+no progress. The sheet contract is unchanged, one carriage return before the
+LF is dropped and any other is part of the value.
+
+The awk bug was in the Copilot context. `awk` expands escape sequences in a `-v`
+assignment, so a plugin root with backslash separators lost them and every
+mandate file read back empty. The path now travels in the environment instead,
+and `text()` fails loudly rather than returning an empty string, which is the
+part that hid the cause.
+
+Nothing here changes behaviour on Linux, where none of these mechanisms strips
+anything. Verified under `dash` as well as Git for Windows `sh`.
+
 ## 0.9.76 - clear the spawn-era prose, turn CI green, and stop the Windows checks reading false
 
 The fork's first release. Every commit since `f3d00e9` shipped under the
