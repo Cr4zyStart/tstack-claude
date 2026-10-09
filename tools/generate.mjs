@@ -776,6 +776,8 @@ export function setupModelsSection(models) {
 
 // The override sheet the setup skill writes for users. The preamble is fixed;
 // the role rows come from models.json.
+// FIX [Claude AI - Opus 5] (2026-10-09 23:14:02): dropped the alias fan-out
+// and effort-agent claims; this text lands in every user's sheet.
 export function overrideSheetBlock(models) {
   const rows = models.roles.map((r) => `${r.role}: ${r.models.join(", ")}`).join("\n");
   return (
@@ -783,9 +785,9 @@ export function overrideSheetBlock(models) {
     "Per-role model overrides for tstack skills. Each tstack SKILL.md names its defaults in a Models section; " +
     "the values here override those defaults. Delete a line to fall back to the skill default. " +
     "A value of `inherit-parent` or `auto` runs that role on the parent session's model (the `Agent` call omits `model`); " +
-    "an alias entry in a panel list still counts toward that panel's fan-out. " +
+    "an alias entry in a panel list still counts as one of that panel's passes. " +
     "A model may carry a reasoning effort, as in `opus @xhigh` (levels: " + models.efforts.join(", ") + "); " +
-    "the role then runs through the tstack effort agent of that level, each entry of a panel list on its own. " +
+    "the level is recorded, not dispatched: tstack never spawns, so there is no child whose effort it could set. " +
     "`default effort` sets the level for a value without one; `session` keeps the parent session's effort. " +
     "`session hook: off` stops the Claude Code or Codex SessionStart hook, or the tstack Pi extension, from injecting the solo mandate; " +
     "any other value, or no line, leaves it on.\n\n" +
