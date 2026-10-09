@@ -64,7 +64,7 @@ import { Value } from "typebox/value";
 
 import { code, codeList, PLUGIN, SKILLS } from "./plugin.mjs";
 import { RUNTIMES, roleSkills } from "./runtimes.mjs";
-import { markdownFiles, pathIsInside, validateProsePaths, validateSkillsTree, walk } from "./validate-skills.mjs";
+import { markdownFiles, pathIsInside, posixRel, validateProsePaths, validateSkillsTree, walk } from "./validate-skills.mjs";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -801,7 +801,6 @@ export function overrideSheetBlock(models) {
 // family name hard-codes a default that belongs in models.json.
 // A repo-relative path with forward slashes, which is how the generator
 // keys its own tables. node:path returns the platform separator.
-const posixRel = (from, to) => relative(from, to).split("\\").join("/");
 
 export function strayModelSlugs(file, text, models) {
   const families = models.available.join("|");

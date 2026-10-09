@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 
 import { loadLeadLines, loadModels, noteSkills } from "../tools/generate.mjs";
 import { RUNTIMES } from "../tools/runtimes.mjs";
-import { markdownFiles } from "../tools/validate-skills.mjs";
+import { readdirSync } from "node:fs";
+import { markdownFiles, posixRel } from "../tools/validate-skills.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const skillsDir = join(repoRoot, "plugins/tstack/skills");
@@ -44,9 +45,18 @@ const TERMS = [
 
 const skillText = markdownFiles(skillsDir)
   .filter((f) => !f.endsWith("/codex-tools.md") && !f.endsWith("/copilot-tools.md"))
-  .map((f) => [relative(skillsDir, f), readFileSync(f, "utf8")]);
+  .map((f) => [posixRel(skillsDir, f), readFileSync(f, "utf8")]);
 
 describe("copilot-tools.md coverage", () => {
+  // ADD [Claude AI - Opus 5] (2026-10-10 01:28:55): the corpus these cases
+  // read used to come back empty on Windows, which made every assertion
+  // below pass or fail for reasons unrelated to its subject.
+  test("the corpus is real: both mapping files are excluded and every skill is found", () => {
+    expect(skillText.filter(([rel]) => rel.endsWith("/codex-tools.md") || rel.endsWith("/copilot-tools.md"))).toEqual([]);
+    const skills = new Set(skillText.filter(([rel]) => rel.endsWith("/SKILL.md")).map(([rel]) => rel.split("/")[0]));
+    expect(skills.size).toBe(readdirSync(skillsDir, { withFileTypes: true }).filter((e) => e.isDirectory()).length);
+  });
+
   for (const [term, row] of TERMS) {
     const users = skillText.filter(([, text]) => text.includes(term)).map(([rel]) => rel);
     test(`${term} (${users.length} files) has a Copilot mapping`, () => {

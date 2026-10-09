@@ -9,7 +9,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadModels, parseModels, regions } from "../tools/generate.mjs";
-import { markdownFiles } from "../tools/validate-skills.mjs";
+import { markdownFiles, posixRel } from "../tools/validate-skills.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const skillsDir = join(repoRoot, "plugins/tstack/skills");
@@ -163,7 +163,7 @@ describe("role labels reach the prose", () => {
       .map((file) => {
         const lines = readFileSync(file, "utf8").split("\n");
         const owned = regions(models)
-          .filter((r) => r.file === relative(repoRoot, file))
+          .filter((r) => r.file === posixRel(repoRoot, file))
           .map((r) => r.locate(lines))
           .filter(Boolean);
         return lines.filter((_, i) => !owned.some(([s, e]) => i >= s && i < e)).join("\n");

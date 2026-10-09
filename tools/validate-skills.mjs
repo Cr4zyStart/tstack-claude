@@ -9,12 +9,23 @@ import { pathToFileURL } from "node:url";
 // vendored tooling's install, and its READMEs are not ours to validate.
 export const SKIPPED_DIRS = new Set([".git", "node_modules"]);
 
+// Node accepts forward slashes on Windows, so a posix path stays usable
+// for readFileSync and friends while string comparisons keep working.
+export const toPosix = (path) => path.split("\\").join("/");
+
+// The one producer of relative paths for comparison and display. Callers
+// key by forward slash; pathIsInside keeps native relative() because it
+// tests for a ".." prefix rather than comparing text.
+export const posixRel = (from, to) => toPosix(relative(from, to));
+
 // Sorted, so reports and scans read the same on every filesystem.
 export function walk(dir) {
   const entries = readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name));
   return entries.flatMap((entry) => {
     if (SKIPPED_DIRS.has(entry.name)) return [];
-    const path = join(dir, entry.name);
+    // FIX [Claude AI - Opus 5] (2026-10-10 01:12:30): posix separators, which
+    // every consumer already assumes and agent-skills.test.mjs pins.
+    const path = toPosix(join(dir, entry.name));
     return entry.isDirectory() ? walk(path) : [path];
   });
 }
@@ -74,7 +85,7 @@ function prosePathProblems(text, file, root) {
     const candidates = [resolve(dirname(file), token), resolve(pluginRoot, token)];
     const outside = candidates.find((path) => existsSync(path) && !pathIsInside(root, path));
     if (outside) {
-      problems.push(`${relative(root, file)} -> ${token} (${relative(pluginRoot, outside)} is not installed with the skills tree)`);
+      problems.push(`${posixRel(root, file)} -> ${token} (${posixRel(pluginRoot, outside)} is not installed with the skills tree)`);
     }
   }
   return problems;
@@ -107,17 +118,17 @@ export function validateSkillsTree(skillsDir) {
       try {
         path = decodeURIComponent(encodedPath);
       } catch {
-        problems.push(`${relative(root, file)} -> ${target} (invalid URI encoding)`);
+        problems.push(`${posixRel(root, file)} -> ${target} (invalid URI encoding)`);
         continue;
       }
 
       const resolved = resolve(dirname(file), path);
       if (scheme === "file" || isAbsolute(path) || !pathIsInside(root, resolved)) {
-        problems.push(`${relative(root, file)} -> ${target} (escapes skills tree)`);
+        problems.push(`${posixRel(root, file)} -> ${target} (escapes skills tree)`);
       } else if (!existsSync(resolved)) {
-        problems.push(`${relative(root, file)} -> ${target} (missing)`);
+        problems.push(`${posixRel(root, file)} -> ${target} (missing)`);
       } else if (!pathIsInside(realRoot, realpathSync(resolved))) {
-        problems.push(`${relative(root, file)} -> ${target} (escapes skills tree through symlink)`);
+        problems.push(`${posixRel(root, file)} -> ${target} (escapes skills tree through symlink)`);
       }
     }
   }

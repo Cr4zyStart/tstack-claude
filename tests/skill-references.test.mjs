@@ -8,7 +8,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { agentSkills } from "../tools/generate.mjs";
-import { markdownFiles } from "../tools/validate-skills.mjs";
+import { markdownFiles, posixRel } from "../tools/validate-skills.mjs";
 
 const skillsDir = fileURLToPath(new URL("../plugins/tstack/skills", import.meta.url));
 const names = new Set(agentSkills(skillsDir).map((s) => s.name));
@@ -35,7 +35,7 @@ describe("prose skill references", () => {
     const dangling = [];
     for (const file of markdownFiles(skillsDir)) {
       for (const ref of references(readFileSync(file, "utf8"))) {
-        if (!names.has(ref.name)) dangling.push(`${relative(skillsDir, file)}: ${ref.kind} ${ref.name}`);
+        if (!names.has(ref.name)) dangling.push(`${posixRel(skillsDir, file)}: ${ref.kind} ${ref.name}`);
       }
     }
     expect(dangling).toEqual([]);
