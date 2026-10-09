@@ -65,6 +65,7 @@ function destination(raw) {
 }
 
 export function pathIsInside(root, path) {
+  // native-path: tests a `..` prefix against sep, so folding would break it.
   const rel = relative(root, path);
   return rel === "" || (rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel));
 }

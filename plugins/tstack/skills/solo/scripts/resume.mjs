@@ -15,6 +15,7 @@ function identity(project) {
   };
 }
 function inside(root, file) {
+  // native-path: tests a `..` prefix against sep, so folding would break it.
   const path = relative(root, file);
   return path === '' || (!isAbsolute(path) && path !== '..' && !path.startsWith(`..${sep}`));
 }

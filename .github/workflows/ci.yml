@@ -27,6 +27,9 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Check generated files and plugin invariants
         run: bun tools/generate.mjs --check
+      # Six separator bugs shipped before anyone went looking for the seventh.
+      - name: No bare relative() calls
+        run: bun tools/check-separators.mjs
       - name: Tool and invariant fixture tests
         run: bun test tests/
 
