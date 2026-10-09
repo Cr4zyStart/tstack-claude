@@ -67,11 +67,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, relative } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { deriveSkill, loadLeadLines, loadModels } from "./generate.mjs";
-import { walk } from "./validate-skills.mjs";
+import { posixRel, walk } from "./validate-skills.mjs";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -350,7 +350,12 @@ export function syncComponent({
     const sub = applySubstitutions(raw.toString("utf8"), rules, rel);
     return { bytes: Buffer.from(derive(rel, sub.text)), counts: sub.counts };
   };
-  const listed = (dir) => new Set(walk(dir).map((file) => relative(dir, file)));
+  // FIX [Claude AI - Opus 5] (2026-10-10 09:12:44): relative() returns native
+  // separators, so every rel arrived backslash-joined on Windows while
+  // blockerOf and dirsAbove split on "/". blockerOf then saw one part, matched
+  // no entry and reported no collision, and the run reached mkdirSync and died
+  // with EEXIST instead of failing before any write.
+  const listed = (dir) => new Set(walk(dir).map((file) => posixRel(dir, file)));
   const [oldPaths, newPaths, localPaths] = [listed(oldDir), listed(newDir), listed(localDir)];
   const upstream = (dir, paths, rel) => {
     if (!paths.has(rel)) return null;
@@ -495,9 +500,13 @@ function pathsOtherComponentsCarry(clone, components, component) {
       git(["-C", clone, "ls-tree", "-r", "-z", "--name-only", other.sha, "--", other.upstreamPath])
         .split("\0")
         .filter(Boolean)
-        .map((path) => relative(other.upstreamPath, path))
+        // FIX [Claude AI - Opus 5] (2026-10-10 09:12:44): git prints forward
+        // slashes, but relative() rejoined these with backslashes on Windows,
+        // which made isExcluded miss and left the "../" filter unable to match
+        // its own prefix, so paths outside the component were never dropped.
+        .map((path) => posixRel(other.upstreamPath, path))
         .filter((rel) => !isExcluded(rel, other.exclude ?? []))
-        .map((rel) => relative(localPath, join(other.localPath, rel)))
+        .map((rel) => posixRel(localPath, join(other.localPath, rel)))
         .filter((rel) => !rel.startsWith("../")),
     );
 }
