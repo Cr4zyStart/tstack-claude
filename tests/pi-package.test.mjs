@@ -51,7 +51,13 @@ function findPiUnder(root, env, globalDir) {
   const piDir = join(globalDir, PI);
   mkdirSync(piDir, { recursive: true });
   writeFileSync(join(piDir, "package.json"), "{}");
-  const childEnv = { ...process.env, HOME: join(root, "home"), npm_config_prefix: join(root, "npm"), ...env };
+  // FIX [Claude AI - Opus 5] (2026-10-10 04:56:10): os.homedir() reads USERPROFILE on
+  // Windows and ignores HOME, and bun derives its global dir the same way
+  // (verified: overriding USERPROFILE moves it, overriding HOME does not), so
+  // setting HOME alone put the fake tree where neither would look and this
+  // test could never pass here. Setting both is inert on POSIX.
+  const home = join(root, "home");
+  const childEnv = { ...process.env, HOME: home, USERPROFILE: home, npm_config_prefix: join(root, "npm"), ...env };
   for (const key of ["PI_PACKAGE_DIR", "BUN_INSTALL", "BUN_INSTALL_GLOBAL_DIR", "XDG_CACHE_HOME"]) if (!(key in env)) delete childEnv[key];
   const run = spawnSync(process.execPath, ["-e", `import(${JSON.stringify(PI_PACKAGE_URL)}).then((m) => console.log(m.findPiPackage()))`], { env: childEnv, encoding: "utf8" });
   return { found: run.stdout.trim(), piDir };

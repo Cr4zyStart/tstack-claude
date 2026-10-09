@@ -157,7 +157,11 @@ describe("a path that is not the agent's linked worktree", () => {
     gitRepo(w.cwd);
     const wt = planWorktree(w.cwd, "id1");
     mkdirSync(wt.path, { recursive: true });
-    expect(spawnSync("git", ["rev-parse", "--show-toplevel"], { cwd: wt.path, encoding: "utf8" }).stdout.trim()).toBe(w.cwd);
+    // FIX [Claude AI - Opus 5] (2026-10-10 04:56:10): git prints --show-toplevel with
+    // forward slashes on every platform, so comparing it to a native path
+    // never matched on Windows. Fold the expectation; a no-op on POSIX.
+    const toplevel = spawnSync("git", ["rev-parse", "--show-toplevel"], { cwd: wt.path, encoding: "utf8" }).stdout.trim();
+    expect(toplevel).toBe(w.cwd.split("\\").join("/"));
     rejected(() => ensureWorktree(wt));
   });
 
