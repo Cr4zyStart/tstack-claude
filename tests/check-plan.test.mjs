@@ -1,3 +1,6 @@
+// FIX [Claude AI - Opus 5] (2026-10-09 18:42:10): mutated "### Spawn owners", a heading the lane
+// rename replaced with "### Assign owners". The edit hit nothing, so the
+// checker correctly passed and these two tests expected a failure.
 import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -57,7 +60,7 @@ describe("plan checklists", () => {
 
   for (const heading of [
     "### Arm the program",
-    "### Spawn owners",
+    "### Assign owners",
     "### PR mechanics, for every PR",
     "### Verdict and merge, for every PR",
     "### Boot recipe, for every live lane",
@@ -77,10 +80,10 @@ describe("plan checklists", () => {
   });
 
   test("example boxes cannot replace program tasks", () => {
-    const plan = editSection("### Spawn owners", (body) => "\n```markdown\n" + body + "\n```\n");
+    const plan = editSection("### Assign owners", (body) => "\n```markdown\n" + body + "\n```\n");
     const result = run(plan);
     expect(result.code).toBe(1);
-    expect(result.out).toContain("Spawn owners has no box");
+    expect(result.out).toContain("Assign owners has no box");
   });
 
   test("example boxes cannot replace completion tasks", () => {
