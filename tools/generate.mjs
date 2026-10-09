@@ -56,7 +56,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { basename, dirname, join, relative } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { Type } from "typebox";
@@ -64,7 +64,7 @@ import { Value } from "typebox/value";
 
 import { code, codeList, PLUGIN, SKILLS } from "./plugin.mjs";
 import { RUNTIMES, roleSkills } from "./runtimes.mjs";
-import { markdownFiles, pathIsInside, posixRel, validateProsePaths, validateSkillsTree, walk } from "./validate-skills.mjs";
+import { markdownFiles, pathIsInside, posixRel, toPosix, validateProsePaths, validateSkillsTree, walk } from "./validate-skills.mjs";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -166,7 +166,10 @@ export function parseFrontmatter(text) {
 export function agentSkills(skillsDir) {
   const skills = [];
   for (const entry of readdirSync(skillsDir).sort()) {
-    const path = join(skillsDir, entry, "SKILL.md");
+    // FIX [Claude AI - Opus 5] (2026-10-10 10:41:27): join() uses the native
+    // separator, so every message below named a backslash path on Windows and
+    // no caller matching "skills/<name>/SKILL.md" could read it.
+    const path = toPosix(join(skillsDir, entry, "SKILL.md"));
     if (!statSync(join(skillsDir, entry)).isDirectory() || !existsSync(path)) continue;
     const front = parseFrontmatter(readFileSync(path, "utf8")).data ?? {};
     const name = front.name;
@@ -220,7 +223,11 @@ export function validatePluginLayout(pluginRoot) {
       // lookbehind scanned a long line about nine times slower.
       for (const [, name] of line.matchAll(/(?:^|\W|\\[a-z])subagent_type[\s\\"'`*]*[:=][\s\\"'`*]*([a-z0-9-]+)(?![\w-]|\.\w)/g)) {
         if (agents.includes(name)) {
-          bareDispatches.push(`${relative(pluginRoot, file)}:${i + 1}: subagent_type: "${name}" (use "tstack:${name}")`);
+          // FIX [Claude AI - Opus 5] (2026-10-10 10:41:27): relative() uses the
+          // native separator, so these sites were named with backslashes on
+          // Windows and no consumer matching "skills/<name>/SKILL.md" could read
+          // them. The check was right; only the path it printed was unusable.
+          bareDispatches.push(`${posixRel(pluginRoot, file)}:${i + 1}: subagent_type: "${name}" (use "tstack:${name}")`);
         }
       }
     });
@@ -236,7 +243,7 @@ export function validatePluginLayout(pluginRoot) {
     const raw = readFileSync(file);
     if (raw.includes(0)) continue;
     raw.toString("utf8").split("\n").forEach((line, i) => {
-      if (/^(<{7}|\|{7}|={7}|>{7})( |$)/.test(line)) markers.push(`${relative(pluginRoot, file)}:${i + 1}: ${line}`);
+      if (/^(<{7}|\|{7}|={7}|>{7})( |$)/.test(line)) markers.push(`${posixRel(pluginRoot, file)}:${i + 1}: ${line}`);
     });
   }
   if (markers.length) {
@@ -987,7 +994,7 @@ function lstatNoSymlinks(root, path) {
     at = join(at, part);
     st = lstatSync(at, { throwIfNoEntry: false });
     if (!st) return null;
-    if (st.isSymbolicLink()) throw new Error(`${relative(root, at)} is a symlink; the generator never writes through one`);
+    if (st.isSymbolicLink()) throw new Error(`${posixRel(root, at)} is a symlink; the generator never writes through one`);
   }
   return st;
 }
