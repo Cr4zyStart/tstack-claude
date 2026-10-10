@@ -93,6 +93,8 @@ copilot plugin install tstack@tstack-claude
 
 This installs tstack for the Copilot CLI and the GitHub Copilot app, which share `~/.copilot`. Start a new session afterwards. Copilot ships no default tstack models, so the first skill that needs one runs `setup-tstack` to pick from the models your account lists, and later sessions reuse that choice.
 
+**On Windows, install 0.9.80 or later.** Earlier builds of the PreToolUse hook approved a vendored script run that wrote to any absolute path, inside the workspace or not. It decided whether a path was absolute by testing for a leading slash, and a Windows path such as `C:/x` has none, so it was treated as relative and joined to the working directory. Since `log.sh` appends to whatever path it is given, an approved command could append to any file on disk without a prompt. Details in [CHANGES](CHANGES.md).
+
 The Copilot build is tested on Copilot CLI 1.0.87 through 1.0.92. On those versions the routing hook's context reaches the session alongside other plugins' session-start context. If a later version keeps only one plugin's context, `setup-tstack` offers a [standing instruction](plugins/tstack/skills/setup-tstack/copilot.md#wire-it-in) for `~/.copilot/copilot-instructions.md` instead. On 1.0.92, once the CLI caches its computer-use experiment assignment, `copilot -p` sessions list no plugin skills and a `skill` call returns "Skill not found". Interactive sessions, the hooks, and the agents are unaffected.
 
 Run `setup-tstack` to change model defaults, set a reasoning effort per role (for example `architect runners: opus @xhigh, fable @max`, which Claude Code dispatches through the plugin's `tstack:effort-<level>` or `tstack:tstack-agent-<level>` agents; roles without a level keep the session's effort unless the sheet's `default effort` line names one), or turn automatic routing off. The plugin installs the routing hook on Claude Code, Codex, and GitHub Copilot; Codex asks you to trust it through `/hooks` before it runs. On Pi the extension injects the same routing instruction. In Claude Code and the Copilot CLI, use `/tstack:setup-tstack`.
@@ -117,6 +119,7 @@ For a bug, it reproduces the failure, uses `how` and `why` to investigate, write
 - [Runtime setup](docs/reference.md#runtime-support)
 - [Models and dependencies](docs/reference.md#configuration-and-dependencies)
 - [Maintenance and port scope](docs/reference.md#maintenance)
+- [Changes by version](CHANGES.md)
 
 ## Data handling
 
