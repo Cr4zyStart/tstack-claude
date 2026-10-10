@@ -48,7 +48,7 @@ import {
   tableRows,
 } from "../tools/generate.mjs";
 import { piModelNamesSection, RUNTIMES } from "../tools/runtimes.mjs";
-import { walk } from "../tools/validate-skills.mjs";
+import { toPosix, walk } from "../tools/validate-skills.mjs";
 
 // FIX [Claude AI - Opus 5] (2026-10-10 06:34:08): bun defaults to 5 s, and a
 // git or spawn fixture on Windows routinely needs longer. Three tests were
@@ -617,10 +617,32 @@ describe("plan, changes, apply", () => {
     made.push(dir);
     return dir;
   };
+  // FIX [Claude AI - Opus 5] (2026-10-10 09:04:12): Windows reports 666 for
+  // every file, so a copy cannot carry the executable bit the hook checks
+  // read, and every shipped hook came back "is not executable". Git can carry
+  // it, and the mode git records is what an install copies, so give the
+  // fixture the same record the source holds. Null elsewhere, where cpSync
+  // preserves the bit itself.
+  const recordExec =
+    process.platform !== "win32"
+      ? null
+      : (spawnSync("git", ["-C", repoRoot, "ls-files", "-s", "-z"], { encoding: "utf8" }).stdout ?? "")
+          .split(" ")
+          .filter(Boolean)
+          .map((entry) => entry.split("	"))
+          .filter(([meta]) => meta.split(" ")[0] === "100755")
+          .map(([, path]) => path);
+
   const repoCopy = () => {
     const dir = scratch("tstack-generate-");
     cpSync(repoRoot, dir, { recursive: true, filter: (src) => ![".git", "node_modules"].includes(basename(src)) });
     symlinkSync(join(repoRoot, "node_modules"), join(dir, "node_modules"));
+    if (recordExec?.length) {
+      const git = (...args) => spawnSync("git", ["-C", dir, ...args], { stdio: "ignore" });
+      git("init", "-q");
+      git("add", "-f", "--", ...recordExec);
+      git("update-index", "--chmod=+x", "--", ...recordExec);
+    }
     return dir;
   };
   const snapshot = (dir) => Object.fromEntries(walk(dir).map((path) => [path, readFileSync(path, "utf8")]));
@@ -967,6 +989,11 @@ describe("plan, changes, apply", () => {
   });
 
   test("problems reports a root with no plugin directory, down to the last check, and does not throw", () => {
-    expect(problems(scratch("tstack-empty-"))).toContainEqual(expect.stringContaining("plugins/tstack/hooks/hooks.json"));
+    // FIX [Claude AI - Opus 5] (2026-10-10 09:19:38): the path comes from
+    // node's own ENOENT message, so it is spelled natively and carries
+    // backslashes on Windows. The subject is that the last check ran, not how
+    // the platform spells a path, so compare the messages posix-folded.
+    const reported = problems(scratch("tstack-empty-")).map(toPosix);
+    expect(reported).toContainEqual(expect.stringContaining("plugins/tstack/hooks/hooks.json"));
   });
 });
