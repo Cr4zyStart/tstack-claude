@@ -13,6 +13,20 @@ setDefaultTimeout(30_000);
 
 const logScript = fileURLToPath(new URL("../plugins/tstack/skills/solo/scripts/log.sh", import.meta.url));
 
+// FIX [Claude AI - Opus 5] (2026-10-10 09:58:04): four conditions Windows
+// cannot provide, each measured here rather than assumed.
+// Argv halves a run of backslashes, so a cell holding \\ arrives as \.
+const argvKeepsBackslashes = process.platform !== "win32";
+// A 200 KB argument fails in uv_spawn with ENAMETOOLONG; the cap is near 32767.
+const hugeArgv = process.platform !== "win32";
+// Git for Windows ships perl beside the coreutils log.sh needs, and a shim in
+// its own directory resolves but will not exec (127 and no diagnostic, for a
+// symlink, an .exe symlink, a copy, and a copy beside msys-2.0.dll, with and
+// without SystemRoot).
+const pathWithoutPerl = process.platform !== "win32";
+// ulimit -f answers "cannot modify limit: Invalid argument".
+const fileSizeLimit = process.platform !== "win32";
+
 // A spreadsheet runs a leading = + - @ as a formula, and a quote-aware TSV
 // reader unwraps a leading " (or runs an unterminated one into later rows).
 test("cells a spreadsheet or TSV reader would reinterpret are written with a leading quote", () => {
@@ -30,7 +44,7 @@ test("cells a spreadsheet or TSV reader would reinterpret are written with a lea
   }
 });
 
-test("cells holding % and backslash sequences are written as given", () => {
+test.skipIf(!argvKeepsBackslashes)("cells holding % and backslash sequences are written as given", () => {
   const dir = mkdtempSync(join(tmpdir(), "tstack-log-"));
   try {
     const log = join(dir, "log.tsv");
@@ -45,7 +59,7 @@ test("cells holding % and backslash sequences are written as given", () => {
 
 // A shell printf on Linux writes 4 KiB at a time. Before the single write, 20 KB
 // rows interleaved there in 12 of 20 runs and 400 KB rows in 100 of 100.
-test("40 concurrent writers with 400 KB rows leave every row intact", async () => {
+test.skipIf(!hugeArgv)("40 concurrent writers with 400 KB rows leave every row intact", async () => {
   const dir = mkdtempSync(join(tmpdir(), "tstack-log-"));
   try {
     const log = join(dir, "log.tsv");
@@ -80,7 +94,7 @@ test("a row with non-ASCII cells is appended when PERL_UNICODE is set", () => {
   }
 });
 
-test("a 200 KB row is appended, though Linux caps one argument at 128 KiB", () => {
+test.skipIf(!hugeArgv)("a 200 KB row is appended, though Linux caps one argument at 128 KiB", () => {
   const dir = mkdtempSync(join(tmpdir(), "tstack-log-"));
   try {
     const log = join(dir, "log.tsv");
@@ -93,7 +107,7 @@ test("a 200 KB row is appended, though Linux caps one argument at 128 KiB", () =
   }
 });
 
-test("a row is appended when perl is not installed", () => {
+test.skipIf(!pathWithoutPerl)("a row is appended when perl is not installed", () => {
   const dir = mkdtempSync(join(tmpdir(), "tstack-log-"));
   try {
     const log = join(dir, "log.tsv");
@@ -151,7 +165,7 @@ test("the caller's stdin is left unread when perl is a shim that drains its own"
   }
 });
 
-test("a short write fails and says how many bytes of the row were appended", () => {
+test.skipIf(!fileSizeLimit)("a short write fails and says how many bytes of the row were appended", () => {
   const dir = mkdtempSync(join(tmpdir(), "tstack-log-"));
   try {
     const pastTheCap = "y".repeat(3000);
