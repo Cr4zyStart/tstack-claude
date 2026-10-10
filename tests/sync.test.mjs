@@ -82,6 +82,19 @@ function underUmask(mask, body) {
   }
 }
 
+// FIX [Claude AI - Opus 5] (2026-10-10 08:22:41): Windows reports 666 for every
+// file whatever chmod or a write mode asked for (measured: 644, 755, 600 and
+// 777 all stat as 666), so a mode the port applied cannot be read back and a
+// mode-only fork cannot be staged at all. Assert the platform's own answer
+// rather than nothing, so a missing or unreadable file still fails here.
+const modesHeld = process.platform !== "win32";
+const expectMode = (path, mode) => expect(statSync(path).mode & 0o777).toBe(modesHeld ? mode : 0o666);
+
+// CreateProcess resolves a bare command name to an .exe and honors neither a
+// shebang script nor a .cmd without a shell, so a consumer that spawns git
+// natively cannot be handed a stand-in git on Windows.
+const canShimNativeGit = process.platform !== "win32";
+
 describe("applySubstitutions", () => {
   test("rewrites Cursor primitives and counts per rule", () => {
     const { text, counts } = applySubstitutions(
@@ -735,11 +748,11 @@ describe("syncComponent", () => {
       expect(report.undeclared).toEqual([]);
       expect(report.stale).toEqual(declared ? [{ rel: "doc.md", reason: "is no longer forked (updated)" }] : []);
       expect(readFileSync(join(localDir, "doc.md"), "utf8")).toBe(dryRun ? localText : newText);
-      expect(statSync(join(localDir, "doc.md")).mode & 0o777).toBe(mode);
+      expectMode(join(localDir, "doc.md"), mode);
     },
   );
 
-  test("upstream absorbing the port's text leaves a surviving port mode change declared", () => {
+  test.skipIf(!modesHeld)("upstream absorbing the port's text leaves a surviving port mode change declared", () => {
     const oldDir = tree({ "doc.md": "a\nb\nc\nd\ne\n" });
     const newDir = tree({ "doc.md": "A\nb\nc\nd\nE\n" });
     const localDir = tree({ "doc.md": "A\nb\nc\nd\ne\n" });
@@ -1205,7 +1218,7 @@ describe("syncComponent", () => {
     expect(readFileSync(join(local, "sibling.md"), "utf8")).toBe("old\n");
   });
 
-  test("a written file takes upstream's mode, and a mode-only upstream change is written", () => underUmask(0o022, () => {
+  test.skipIf(!modesHeld)("a written file takes upstream's mode, and a mode-only upstream change is written", () => underUmask(0o022, () => {
     const oldUp = tree({ "same.sh": "echo\n", "forked.sh": "echo\n" });
     const newUp = tree({ "same.sh": "echo\n", "forked.sh": "echo\n", "added.sh": "echo\n" });
     const local = tree({ "same.sh": "echo\n", "forked.sh": "echo port\n" });
@@ -1303,7 +1316,7 @@ describe("syncComponent", () => {
     );
   });
 
-  test("a mode-only port change upstream left alone is forked and keeps its mode", () => {
+  test.skipIf(!modesHeld)("a mode-only port change upstream left alone is forked and keeps its mode", () => {
     const oldUp = tree({ "run.sh": "echo\n" });
     const newUp = tree({ "run.sh": "echo\n" });
     const local = tree({ "run.sh": "echo\n" });
@@ -1335,7 +1348,7 @@ describe("syncComponent", () => {
     expect(report.unchanged).toBe(1);
   });
 
-  test("a merge keeps a mode the port changed when upstream left the mode alone", () => {
+  test.skipIf(!modesHeld)("a merge keeps a mode the port changed when upstream left the mode alone", () => {
     const oldUp = tree({ "run.sh": "echo\n" });
     const newUp = tree({ "run.sh": "echo upstream\n" });
     const local = tree({ "run.sh": "echo\n" });
@@ -1350,7 +1363,7 @@ describe("syncComponent", () => {
     expect(statSync(join(local, "run.sh")).mode & 0o777).toBe(0o755);
   });
 
-  test("a written file keeps the permission bits git does not record", () => {
+  test.skipIf(!modesHeld)("a written file keeps the permission bits git does not record", () => {
     const base = "l1\nl2\nl3\nl4\nl5\nl6\nl7\n";
     const edited = base.replace("l7", "l7 upstream");
     const portEdit = base.replace("l1", "l1 the port");
@@ -1375,7 +1388,7 @@ describe("syncComponent", () => {
     expect(readFileSync(join(local, "updated.md"), "utf8")).toBe(edited);
   });
 
-  test.each([
+  test.skipIf(!modesHeld).each([
     ["a new executable file", null, 0o700],
     ["an update that sets the executable bit", 0o600, 0o700],
     ["an update that clears the executable bit", 0o700, 0o600],
@@ -1393,7 +1406,7 @@ describe("syncComponent", () => {
     expect(statSync(join(local, "run.sh")).mode & 0o777).toBe(newMode);
   }));
 
-  test("forks are reported largest first by changed lines, and a mode-only fork is marked", () => {
+  test.skipIf(!modesHeld)("forks are reported largest first by changed lines, and a mode-only fork is marked", () => {
     const body = { "a.md": "one\n", "b.md": "one\ntwo\nthree\n", "run.sh": "echo\n" };
     const oldUp = tree(body);
     const newUp = tree(body);
@@ -1476,7 +1489,7 @@ describe("syncComponent", () => {
     }
   });
 
-  test("a merge git reports as conflicted without printing markers fails the run naming the file", () => {
+  test.skipIf(!canShimNativeGit)("a merge git reports as conflicted without printing markers fails the run naming the file", () => {
     const bin = tree({ git: "#!/bin/sh\nexit 1\n" });
     chmodSync(join(bin, "git"), 0o755);
     const [oldDir, newDir, localDir] = [tree({ "s.md": "old\n" }), tree({ "s.md": "new\n" }), tree({ "s.md": "port\n" })];
@@ -1608,7 +1621,7 @@ describe("sync CLI", () => {
     for (const rel of portOnly) expect(result.stdout).toContain(`\n  plugins/tstack/skills/${rel}\n`);
   });
 
-  test("a dry run prints mode in place of a count for a mode-only fork", () => {
+  test.skipIf(!modesHeld)("a dry run prints mode in place of a count for a mode-only fork", () => {
     const { run, port } = cli({ oldText: "one\n", newText: "one\n", localText: "one\n", forks: declareS("port-feature") });
     chmodSync(join(port, "plugins/tstack/skills/s.md"), 0o755);
 
